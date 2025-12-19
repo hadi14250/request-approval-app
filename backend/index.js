@@ -28,7 +28,7 @@ app.get("/health", (req, res) => {
 
 app.post("/requests", (req, res) => {
 
-  const user  = getCurrentUser(req);
+  const user = getCurrentUser(req);
 
   if (!user) {
     return res.status(401).json({ error: "Missing user-id in header" });
@@ -52,6 +52,8 @@ app.post("/requests", (req, res) => {
   const allowedTypes = ["Access", "Finance", "General"];
   const safeType = allowedTypes.includes(type) ? type : "General";
 
+  const nowDate = new Date().toISOString();
+
   const newRequest = {
     id: nextId,
     title: trimmedTitle,
@@ -63,14 +65,29 @@ app.post("/requests", (req, res) => {
     approverComment: null,
     approvedByUserId: null,
     approvedByUserName: null,
-    createdAt: new Date().toISOString(),
-    updatedAt: new Date().toISOString()
+    createdAt: nowDate,
+    updatedAt: nowDate
   }
 
   requests.push(newRequest);
   nextId++;
 
   res.status(201).json(newRequest);
+})
+
+// gets all requests of a single user
+app.get("/requests", (req, res) => {
+    const user = getCurrentUser(req);
+    
+    if (!user) {
+        return res.status(401).json({ error: "Missing user-id in header" });
+    }
+
+    res.json(
+    requests.filter(
+        (request) => request.createdByUserId === user.id
+    )
+  );
 })
 
 
