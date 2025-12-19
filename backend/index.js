@@ -38,7 +38,11 @@ app.post("/requests", (req, res) => {
     return res.status(403).json({ error: "Only Requesters can create requests" });
   }
 
-  const { title, description, type } = req.body;
+  const { title, description, type } = req.body || {};
+  
+  if (!title && !description && !type) {
+        return res.status(400).json({ error: "Request body is required" });
+    }
 
   if (typeof title !== "string") {
     return res.status(400).json({ error: "Title must be a string" });
@@ -121,7 +125,7 @@ app.post("/requests/:id/submit", (req, res) => {
     request.status = "Submitted";
     request.updatedAt = new Date().toISOString();
 
-    res.status(200).json(request);
+    return res.status(200).json(request);
 
 })
 
@@ -231,6 +235,70 @@ app.post("/requests/:id/reject", (req, res) => {
 
     return res.status(200).json(request);
 })
+
+app.patch ("/requests/:id/edit", (req, res) => {
+    const user = getCurrentUser(req);
+
+    if (!user) {
+        return res.status(401).json({ error: "Missing user-id in header" });
+    }
+
+    if (!user.roles.includes("Requester")) {
+        return res.status(403).json({ error: "Only Requesters can edit requests" });
+    }
+
+    const requestId = Number(req.params.id);
+    const request = requests.find (
+        (request) => request.id === requestId
+    )
+
+    if (!request) {
+        return res.status(404).json({ error: "Request not found" });
+    }
+
+    if (request.createdByUserId !== user.id) {
+        return res.status(403).json({ error: "Only the user who created the request can edit" });
+    }
+
+    if (request.status !== "Draft") {
+        return res.status(400).json({ error: "Only Draft requests can be edited" })
+    }
+
+    const { title, description, type } = req.body || {};
+
+    if (!title && !description && !type) {
+        return res.status(400).json({ error: "Request body is required" });
+    }
+
+    if (title !== undefined) {
+        if (typeof title !== "string") {
+            return res.status(400).json({ error: "Title must be a string" });
+        }
+        const trimmedTitle = title.trim();
+        if (!trimmedTitle) {
+            return res.status(400).json({ error: "Title is required" });
+        }
+        request.title = trimmedTitle;
+    }
+
+    if (description !== undefined) {
+        if (typeof description !== "string") {
+            return res.status(400).json({ error: "Description must be a string" });
+        }
+        request.description = description;
+    }
+
+    if (type !== undefined) {
+        const allowedTypes = ["Access", "Finance", "General"];
+        const safeType = allowedTypes.includes(type) ? type : "General";
+        request.type = safeType;
+    }
+
+    request.updatedAt = new Date().toISOString();
+
+    return res.status(200).json(request);
+})
+
 
 const PORT = 3000
 app.listen(PORT, () => {
