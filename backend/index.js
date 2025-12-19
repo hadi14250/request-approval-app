@@ -39,10 +39,6 @@ app.post("/requests", (req, res) => {
   }
 
   const { title, description, type } = req.body || {};
-  
-  if (!title && !description && !type) {
-        return res.status(400).json({ error: "Request body is required" });
-    }
 
   if (typeof title !== "string") {
     return res.status(400).json({ error: "Title must be a string" });
@@ -299,6 +295,44 @@ app.patch ("/requests/:id/edit", (req, res) => {
     return res.status(200).json(request);
 })
 
+app.delete("/requests/:id", (req, res) => {
+    const user = getCurrentUser(req);
+
+    if (!user) {
+        return res.status(401).json({ error: "Missing user-id in header" });
+    }
+
+    if (!user.roles.includes("Requester")) {
+        return res.status(403).json({ error: "Only Requesters can delete requests" });
+    }
+
+    const requestId = Number(req.params.id);
+    const request = requests.find (
+        (request) => request.id === requestId
+    )
+
+    if (!request) {
+        return res.status(404).json({ error: "Request not found" });
+    }
+
+    if (request.createdByUserId !== user.id) {
+        return res.status(403).json({ error: "Only the user who created the request can delete" });
+    }
+
+    if (request.status !== "Draft") {
+        return res.status(400).json({ error: "Only Draft requests can be deleted" })
+    }
+
+
+    const index = requests.findIndex(
+        (request) => request.id === requestId
+    );
+
+    requests.splice(index, 1);
+
+    return res.status(204).send();
+
+})
 
 const PORT = 3000
 app.listen(PORT, () => {
