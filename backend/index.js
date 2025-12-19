@@ -18,7 +18,7 @@ function getCurrentUser(req) {
 
     if (!userId) return null;
 
-    return users.find( (user) => user.id === userId ) || null
+    return users.find( (user) => user.id === userId ) || null;
 
 }
 
@@ -35,7 +35,7 @@ app.post("/requests", (req, res) => {
   }
 
   if (!user.roles.includes("Requester")) {
-    return res.status(401).json({ error: "Only Requesters can create requests" });
+    return res.status(403).json({ error: "Only Requesters can create requests" });
   }
 
   const { title, description, type } = req.body;
@@ -90,6 +90,63 @@ app.get("/requests", (req, res) => {
   );
 })
 
+app.post("/requests/:id/submit", (req, res) => {
+    const user = getCurrentUser(req);
+
+    if (!user) {
+        return res.status(401).json({ error: "Missing user-id in header" });
+    }
+
+    if (!user.roles.includes("Requester")) {
+        return res.status(403).json({ error: "Only Requesters can submit requests" });
+    }
+
+    const requestId = Number(req.params.id);
+    const request = requests.find(
+        (request) => request.id === requestId
+    );
+
+    if (!request) {
+        return res.status(404).json({ error: "Request not found" });
+    }
+
+    if (request.createdByUserId !== user.id) {
+        return res.status(403).json({ error: "Only the user who created the request can submit" });
+    }
+
+    if (request.status !== "Draft") {
+        return res.status(400).json({ error: "Only Draft requests can be submitted" });
+    }
+
+    request.status = "Submitted";
+    request.updatedAt = new Date().toISOString();
+
+    res.status(200).json(request);
+
+})
+
+// If user is approver, it shows all pending requests except thier own (if the approver is also a requester), if the user is a requester, it will show them their pending requests
+app.get("/requests/pending", (req, res) => {
+    const user = getCurrentUser(req);
+
+    if (!user) {
+        return res.status(401).json({ error: "Missing user-id in header" });
+    }
+
+    if (user.roles.includes("Approver")) {
+        return res.json(
+            requests.filter((request) => request.status === "Submitted" && user.id !== request.createdByUserId)
+        );
+    }
+    else if (user.roles.includes("Requester")) {
+        return res.json (
+            requests.filter((request) => request.status === "Submitted" && user.id === request.createdByUserId)
+        );
+    }
+    else
+        res.status(403).json({ error: "User has no valid role" });
+
+})
 
 const PORT = 3000
 app.listen(PORT, () => {
