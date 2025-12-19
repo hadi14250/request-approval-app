@@ -48,12 +48,15 @@ app.post("/requests", (req, res) => {
   if (!trimmedTitle) {
     return res.status(400).json({ error: "Title is required" });
   }
+  
+  const allowedTypes = ["Access", "Finance", "General"];
+  const safeType = allowedTypes.includes(type) ? type : "General";
 
   const newRequest = {
     id: nextId,
     title: trimmedTitle,
-    description: description || null,
-    type: type || "General",
+    description: description || "",
+    type: safeType,
     status: "Draft",
     createdByUserId: user.id,
     createdByUserName: user.name,
@@ -68,8 +71,6 @@ app.post("/requests", (req, res) => {
   nextId++;
 
   res.status(201).json(newRequest);
-
-  console.log("New requests array:", requests);
 })
 
 
