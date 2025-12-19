@@ -148,6 +148,90 @@ app.get("/requests/pending", (req, res) => {
 
 })
 
+app.post("/requests/:id/approve", (req, res) => {
+    const user = getCurrentUser(req);
+
+    if (!user) {
+        return res.status(401).json({ error: "Missing user-id in header" });
+    }
+
+    if (!user.roles.includes("Approver")) {
+        return res.status(403).json( { error: "Only Approvers can approve requests" } )
+    }
+
+    const requestId = Number(req.params.id);
+    const request = requests.find (
+        (request) => request.id === requestId
+    );
+
+    if (!request) {
+        return res.status(404).json({ error: "Request not found" });
+    }
+
+    if (request.status !== "Submitted") {
+        return res.status(400).json({ error: "Only submitted requestes can be approved" });
+    }
+    if (request.createdByUserId === user.id) {
+        return res.status(403).json({ error: "Approver can't approve requests they created" });
+    }
+
+    const { approverComment } = req.body;
+    
+    if (typeof approverComment !== "string" || !approverComment.trim()) {
+        return res.status(400).json({ error: "Approver comment is required" });
+    }
+
+    request.approverComment = approverComment.trim();
+    request.approvedByUserId = user.id;
+    request.approvedByUserName = user.name;
+    request.status = "Approved";
+    request.updatedAt = new Date().toISOString();
+
+    return res.status(200).json(request);
+})
+
+app.post("/requests/:id/reject", (req, res) => {
+    const user = getCurrentUser(req);
+
+    if (!user) {
+        return res.status(401).json({ error: "Missing user-id in header" });
+    }
+
+    if (!user.roles.includes("Approver")) {
+        return res.status(403).json( { error: "Only Approvers can reject requests" } )
+    }
+
+    const requestId = Number(req.params.id);
+    const request = requests.find (
+        (request) => request.id === requestId
+    );
+
+    if (!request) {
+        return res.status(404).json({ error: "Request not found" });
+    }
+
+    if (request.status !== "Submitted") {
+        return res.status(400).json({ error: "Only submitted requestes can be rejected" });
+    }
+    if (request.createdByUserId === user.id) {
+        return res.status(403).json({ error: "Approver can't reject requests they created" });
+    }
+
+    const { approverComment } = req.body;
+    
+    if (typeof approverComment !== "string" || !approverComment.trim()) {
+        return res.status(400).json({ error: "Approver comment is required" });
+    }
+
+    request.approverComment = approverComment.trim();
+    request.approvedByUserId = user.id;
+    request.approvedByUserName = user.name;
+    request.status = "Rejected";
+    request.updatedAt = new Date().toISOString();
+
+    return res.status(200).json(request);
+})
+
 const PORT = 3000
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
