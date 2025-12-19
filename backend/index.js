@@ -1,21 +1,41 @@
-const app = require('express')();
+const express = require("express");
+const app = express();
 
-let requests = []
-let nextId = 1
+
+app.use(express.json());
+
+let requests = [];
+let nextId = 1;
 
 app.get("/health", (req, res) => {
     res.json({ status : "worked"})
+});
+
+app.post("/requests", (req, res) => {
+  const { title, description, type } = req.body;
+
+  if (!title) {
+    return res.status(400).json({ error: "Title is required" });
+  }
+
+  const newRequest = {
+    id: nextId,
+    title: title,
+    description: description || null,
+    type: type || general,
+    status: "Draft",
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString()
+  }
+
+  requests.push(newRequest);
+  nextId++;
+
+  res.status(200).json(newRequest);
+
+  console.log("New requests array:", requests);
 })
 
-app.get("/requests", (req, res) => {
-  res.json(requests)
-})
-
-app.post("/requests/:id", (req, res) => {
-    const { id } = req.params;
-    console.log(`Post request received with id: ${id}`);
-    res.status(200).json({ message: `Post request with id ${id} received` });
-})
 
 const PORT = 3000
 app.listen(PORT, () => {
