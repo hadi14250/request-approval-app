@@ -40,13 +40,18 @@ app.post("/requests", (req, res) => {
 
   const { title, description, type } = req.body;
 
-  if (!title) {
+  if (typeof title !== "string") {
+    return res.status(400).json({ error: "Title must be a string" });
+  }
+
+  const trimmedTitle = title.trim();
+  if (!trimmedTitle) {
     return res.status(400).json({ error: "Title is required" });
   }
 
   const newRequest = {
     id: nextId,
-    title: title,
+    title: trimmedTitle,
     description: description || null,
     type: type || "General",
     status: "Draft",
