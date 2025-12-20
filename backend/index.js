@@ -1,17 +1,11 @@
 const express = require("express");
-require("dotenv").config();
+
 const db = require("./db");
 
 const app = express();
 const PORT = 3000;
 
-const USE_DB = process.env.USE_DB === "true" ? true : false;
-
-
 app.use(express.json());
-
-let requests = []; // used only when USE_DB=false
-let nextId = 1; // used only when USE_DB=false
 
 const users = [
     { id: 1, name: "Hadi", roles: ["Requester"] },
@@ -28,10 +22,7 @@ function getCurrentUser(req) {
 }
 
 function getRequestById(requestId) {
-    const request = USE_DB
-    ? db.prepare("SELECT * FROM requests WHERE id = ?").get(requestId)
-    :
-    requests.find((request) => request.id === requestId);
+    const request = db.prepare("SELECT * FROM requests WHERE id = ?").get(requestId)
 
     return request;
 }
@@ -67,50 +58,29 @@ app.post("/requests", (req, res) => {
   const safeType = allowedTypes.includes(type) ? type : "General";
 
   const nowDate = new Date().toISOString();
+  
+  const insert = db.prepare(`
+        INSERT INTO requests
+        (title, description, type, status, createdByUserId, createdByUserName, approverComment, approvedByUserId, approvedByUserName, createdAt, updatedAt)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+        
+const info = insert.run(
+    trimmedTitle,
+    description ?? null,
+    safeType,
+    "Draft",
+    user.id,
+    user.name,
+    null,
+    null,
+    null,
+    nowDate,
+    nowDate
+    );
 
-    if (!USE_DB) {
-        const newRequest = {
-            id: nextId++,
-            title: trimmedTitle,
-            description: description || null,
-            type: safeType,
-            status: "Draft",
-            createdByUserId: user.id,
-            createdByUserName: user.name,
-            approverComment: null,
-            approvedByUserId: null,
-            approvedByUserName: null,
-            createdAt: nowDate,
-            updatedAt: nowDate
-        };
-        requests.push(newRequest);
-        return res.status(201).json(newRequest);
-    }
-    else {
-        console.log("creating db version");
-        const insert = db.prepare(`
-            INSERT INTO requests
-            (title, description, type, status, createdByUserId, createdByUserName, approverComment, approvedByUserId, approvedByUserName, createdAt, updatedAt)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `);
-
-        const info = insert.run(
-            trimmedTitle,
-            description ?? null,
-            safeType,
-            "Draft",
-            user.id,
-            user.name,
-            null,
-            null,
-            null,
-            nowDate,
-            nowDate
-        );
-
-        const created = db.prepare("SELECT * FROM requests WHERE id = ?").get(info.lastInsertRowid);
-        return res.status(201).json(created);
-    }
+    const created = db.prepare("SELECT * FROM requests WHERE id = ?").get(info.lastInsertRowid);
+    return res.status(201).json(created);
 
 })
 
@@ -121,19 +91,11 @@ app.get("/requests", (req, res) => {
     if (!user) {
         return res.status(401).json({ error: "Missing user-id in header" });
     }
+    
+    const rows = db.prepare("SELECT * FROM requests WHERE createdByUserId = ? ORDER By id DESC").all(user.id);
+    
+    return res.json(rows);
 
-    if (!USE_DB) {
-        return res.json(
-            requests.filter(
-                (request) => request.createdByUserId === user.id
-            )
-        );
-    }
-    else {
-        const rows = db.prepare("SELECT * FROM requests WHERE createdByUserId = ? ORDER By id DESC").all(user.id);
-        
-        return res.json(rows);
-    }
 })
 
 app.post("/requests/:id/submit", (req, res) => {
@@ -163,25 +125,16 @@ app.post("/requests/:id/submit", (req, res) => {
     }
 
     const nowDate = new Date().toISOString();
-
-    if (!USE_DB) {
-        request.status = "Submitted";
-        request.updatedAt = nowDate;
+    
+    db.prepare(`
+        UPDATE requests
+        SET status = ?, updatedAt = ?
+        WHERE id = ?
+        `).run("Submitted", nowDate, requestId);
         
-        return res.status(200).json(request);
-    } else {
-        db.prepare(`
-            UPDATE requests
-            SET status = ?, updatedAt = ?
-            WHERE id = ?
-            `).run("Submitted", nowDate, requestId);
-
-        const updated = db.prepare("SELECT * FROM requests where id = ?").get(requestId);
-
-        return res.status(200).json(updated);
-    }
-
-
+    const updated = db.prepare("SELECT * FROM requests where id = ?").get(requestId);
+    
+    return res.status(200).json(updated);
 })
 
 // If user is approver, it shows all pending requests except thier own (if the approver is also a requester), if the user is a requester, it will show them their pending requests
@@ -194,12 +147,18 @@ app.get("/requests/pending", (req, res) => {
 
     if (user.roles.includes("Approver")) {
         return res.json(
-            requests.filter((request) => request.status === "Submitted" && user.id !== request.createdByUserId)
+            db.prepare(`SELECT * FROM requests
+                        WHERE status = ? AND createdByUserId <> ?
+                        ORDER By id DESC
+                        `).all("Submitted", user.id)
         );
     }
     else if (user.roles.includes("Requester")) {
         return res.json (
-            requests.filter((request) => request.status === "Submitted" && user.id === request.createdByUserId)
+            db.prepare(`SELECT * FROM requests
+                        WHERE status = ? AND createdByUserId = ?
+                        ORDER By id DESC
+                `).all("Submitted", user.id)
         );
     }
     else
@@ -219,9 +178,7 @@ app.post("/requests/:id/approve", (req, res) => {
     }
 
     const requestId = Number(req.params.id);
-    const request = requests.find (
-        (request) => request.id === requestId
-    );
+    const request = getRequestById(requestId);
 
     if (!request) {
         return res.status(404).json({ error: "Request not found" });
