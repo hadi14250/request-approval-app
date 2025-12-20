@@ -190,7 +190,7 @@ app.post("/requests/:id/approve", (req, res) => {
         return res.status(403).json({ error: "Approver can't approve requests they created" });
     }
 
-    const { approverComment } = req.body;
+    const { approverComment } = req.body || {};
     
     if (typeof approverComment !== "string" || !approverComment.trim()) {
         return res.status(400).json({ error: "Approver comment is required" });
@@ -212,6 +212,7 @@ app.post("/requests/:id/approve", (req, res) => {
         );
 
     const updated = db.prepare(`SELECT * FROM requests WHERE id = ?`).get(requestId);
+
     return res.status(200).json(updated);
 
 })
@@ -241,7 +242,7 @@ app.post("/requests/:id/reject", (req, res) => {
         return res.status(403).json({ error: "Approver can't reject requests they created" });
     }
 
-    const { approverComment } = req.body;
+    const { approverComment } = req.body || {};
     
     if (typeof approverComment !== "string" || !approverComment.trim()) {
         return res.status(400).json({ error: "Approver comment is required" });
