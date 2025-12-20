@@ -1,11 +1,17 @@
 const express = require("express");
+require("dotenv").config();
+const db = require("./db");
+
 const app = express();
+const PORT = 3000;
+
+const USE_DB = process.env.USE_DB === "true" ? true : false;
 
 
 app.use(express.json());
 
-let requests = [];
-let nextId = 1;
+let requests = []; // used only when USE_DB=false
+let nextId = 1; // used only when USE_DB=false
 
 const users = [
     { id: 1, name: "Hadi", roles: ["Requester"] },
@@ -19,7 +25,15 @@ function getCurrentUser(req) {
     if (!userId) return null;
 
     return users.find( (user) => user.id === userId ) || null;
+}
 
+function getRequestById(requestId) {
+    const request = USE_DB
+    ? db.prepare("SELECT * FROM requests WHERE id = ?").get(requestId)
+    :
+    requests.find((request) => request.id === requestId);
+
+    return request;
 }
 
 app.get("/health", (req, res) => {
@@ -54,25 +68,50 @@ app.post("/requests", (req, res) => {
 
   const nowDate = new Date().toISOString();
 
-  const newRequest = {
-    id: nextId,
-    title: trimmedTitle,
-    description: description || "",
-    type: safeType,
-    status: "Draft",
-    createdByUserId: user.id,
-    createdByUserName: user.name,
-    approverComment: null,
-    approvedByUserId: null,
-    approvedByUserName: null,
-    createdAt: nowDate,
-    updatedAt: nowDate
-  }
+    if (!USE_DB) {
+        const newRequest = {
+            id: nextId++,
+            title: trimmedTitle,
+            description: description || null,
+            type: safeType,
+            status: "Draft",
+            createdByUserId: user.id,
+            createdByUserName: user.name,
+            approverComment: null,
+            approvedByUserId: null,
+            approvedByUserName: null,
+            createdAt: nowDate,
+            updatedAt: nowDate
+        };
+        requests.push(newRequest);
+        return res.status(201).json(newRequest);
+    }
+    else {
+        console.log("creating db version");
+        const insert = db.prepare(`
+            INSERT INTO requests
+            (title, description, type, status, createdByUserId, createdByUserName, approverComment, approvedByUserId, approvedByUserName, createdAt, updatedAt)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `);
 
-  requests.push(newRequest);
-  nextId++;
+        const info = insert.run(
+            trimmedTitle,
+            description ?? null,
+            safeType,
+            "Draft",
+            user.id,
+            user.name,
+            null,
+            null,
+            null,
+            nowDate,
+            nowDate
+        );
 
-  res.status(201).json(newRequest);
+        const created = db.prepare("SELECT * FROM requests WHERE id = ?").get(info.lastInsertRowid);
+        return res.status(201).json(created);
+    }
+
 })
 
 // gets all requests of a single user
@@ -83,11 +122,18 @@ app.get("/requests", (req, res) => {
         return res.status(401).json({ error: "Missing user-id in header" });
     }
 
-    res.json(
-    requests.filter(
-        (request) => request.createdByUserId === user.id
-    )
-  );
+    if (!USE_DB) {
+        return res.json(
+            requests.filter(
+                (request) => request.createdByUserId === user.id
+            )
+        );
+    }
+    else {
+        const rows = db.prepare("SELECT * FROM requests WHERE createdByUserId = ? ORDER By id DESC").all(user.id);
+        
+        return res.json(rows);
+    }
 })
 
 app.post("/requests/:id/submit", (req, res) => {
@@ -100,11 +146,9 @@ app.post("/requests/:id/submit", (req, res) => {
     if (!user.roles.includes("Requester")) {
         return res.status(403).json({ error: "Only Requesters can submit requests" });
     }
-
+    
     const requestId = Number(req.params.id);
-    const request = requests.find(
-        (request) => request.id === requestId
-    );
+    const request = getRequestById(requestId);
 
     if (!request) {
         return res.status(404).json({ error: "Request not found" });
@@ -118,10 +162,25 @@ app.post("/requests/:id/submit", (req, res) => {
         return res.status(400).json({ error: "Only Draft requests can be submitted" });
     }
 
-    request.status = "Submitted";
-    request.updatedAt = new Date().toISOString();
+    const nowDate = new Date().toISOString();
 
-    return res.status(200).json(request);
+    if (!USE_DB) {
+        request.status = "Submitted";
+        request.updatedAt = nowDate;
+        
+        return res.status(200).json(request);
+    } else {
+        db.prepare(`
+            UPDATE requests
+            SET status = ?, updatedAt = ?
+            WHERE id = ?
+            `).run("Submitted", nowDate, requestId);
+
+        const updated = db.prepare("SELECT * FROM requests where id = ?").get(requestId);
+
+        return res.status(200).json(updated);
+    }
+
 
 })
 
@@ -334,7 +393,7 @@ app.delete("/requests/:id", (req, res) => {
 
 })
 
-const PORT = 3000
+
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
 })
