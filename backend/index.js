@@ -359,9 +359,7 @@ app.delete("/requests/:id", (req, res) => {
     }
 
     const requestId = Number(req.params.id);
-    const request = requests.find (
-        (request) => request.id === requestId
-    )
+    const request = getRequestById(requestId);
 
     if (!request) {
         return res.status(404).json({ error: "Request not found" });
@@ -375,17 +373,10 @@ app.delete("/requests/:id", (req, res) => {
         return res.status(400).json({ error: "Only Draft requests can be deleted" })
     }
 
-
-    const index = requests.findIndex(
-        (request) => request.id === requestId
-    );
-
-    requests.splice(index, 1);
-
+    db.prepare(`Delete FROM requests WHERE id = ?`).run(requestId);
     return res.status(204).send();
 
 })
-
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`)
