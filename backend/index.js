@@ -196,14 +196,25 @@ app.post("/requests/:id/approve", (req, res) => {
     if (typeof approverComment !== "string" || !approverComment.trim()) {
         return res.status(400).json({ error: "Approver comment is required" });
     }
+    
+    const nowDate = new Date().toISOString();
 
-    request.approverComment = approverComment.trim();
-    request.approvedByUserId = user.id;
-    request.approvedByUserName = user.name;
-    request.status = "Approved";
-    request.updatedAt = new Date().toISOString();
+    db.prepare(`
+                UPDATE requests
+                SET status = ?, approverComment = ?,  approvedByUserId = ?, approvedByUserName = ?, updatedAt = ?
+                WHERE id = ?
+        `).run(
+            "Approved",
+            approverComment.trim(),
+            user.id,
+            user.name,
+            nowDate,
+            requestId
+        );
 
-    return res.status(200).json(request);
+    const updated = db.prepare(`SELECT * FROM requests WHERE id = ?`).get(requestId);
+    return res.status(200).json(updated);
+
 })
 
 app.post("/requests/:id/reject", (req, res) => {
@@ -218,9 +229,7 @@ app.post("/requests/:id/reject", (req, res) => {
     }
 
     const requestId = Number(req.params.id);
-    const request = requests.find (
-        (request) => request.id === requestId
-    );
+    const request = getRequestById(requestId);
 
     if (!request) {
         return res.status(404).json({ error: "Request not found" });
@@ -239,13 +248,24 @@ app.post("/requests/:id/reject", (req, res) => {
         return res.status(400).json({ error: "Approver comment is required" });
     }
 
-    request.approverComment = approverComment.trim();
-    request.approvedByUserId = user.id;
-    request.approvedByUserName = user.name;
-    request.status = "Rejected";
-    request.updatedAt = new Date().toISOString();
+    const nowDate = new Date().toISOString();
 
-    return res.status(200).json(request);
+    db.prepare(`
+        UPDATE requests
+        SET status = ?, approverComment = ?, approvedByUserId = ?, approvedByUserName = ?, updatedAt = ?
+        WHERE id = ?
+        `).run(
+            "Rejected",
+            approverComment.trim(),
+            user.id,
+            user.name,
+            nowDate,
+            requestId
+        );
+
+    const updated = db.prepare(`SELECT * FROM requests WHERE id = ?`).get(requestId);
+
+    return res.status(200).json(updated);
 })
 
 app.patch ("/requests/:id/edit", (req, res) => {
@@ -260,9 +280,7 @@ app.patch ("/requests/:id/edit", (req, res) => {
     }
 
     const requestId = Number(req.params.id);
-    const request = requests.find (
-        (request) => request.id === requestId
-    )
+    const request = getRequestById(requestId);
 
     if (!request) {
         return res.status(404).json({ error: "Request not found" });
@@ -282,6 +300,10 @@ app.patch ("/requests/:id/edit", (req, res) => {
         return res.status(400).json({ error: "Request body is required" });
     }
 
+    let newTitle = request.title;
+    let newDescription = request.description;
+    let newType = request.type;
+
     if (title !== undefined) {
         if (typeof title !== "string") {
             return res.status(400).json({ error: "Title must be a string" });
@@ -290,25 +312,39 @@ app.patch ("/requests/:id/edit", (req, res) => {
         if (!trimmedTitle) {
             return res.status(400).json({ error: "Title is required" });
         }
-        request.title = trimmedTitle;
+        newTitle = trimmedTitle;
     }
 
     if (description !== undefined) {
         if (typeof description !== "string") {
             return res.status(400).json({ error: "Description must be a string" });
         }
-        request.description = description;
+        newDescription = description;
     }
 
     if (type !== undefined) {
         const allowedTypes = ["Access", "Finance", "General"];
         const safeType = allowedTypes.includes(type) ? type : "General";
-        request.type = safeType;
+        newType = safeType;
     }
 
-    request.updatedAt = new Date().toISOString();
+    const nowDate = new Date().toISOString();
 
-    return res.status(200).json(request);
+    db.prepare(`
+        UPDATE requests
+        SET title = ?, description = ?, type = ?, updatedAt = ?
+        WHERE id = ?
+        `).run(
+            newTitle,
+            newDescription,
+            newType,
+            nowDate,
+            requestId
+        )
+
+    const updated = db.prepare(`SELECT * FROM requests WHERE id = ?`).get(requestId);
+
+    return res.status(200).json(updated);
 })
 
 app.delete("/requests/:id", (req, res) => {
