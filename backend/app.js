@@ -7,31 +7,32 @@ const app = express();
 app.use(express.json());
 
 const users = [
-    { id: 1, name: "Hadi", roles: ["Requester"] },
-    { id: 2, name: "Haneen", roles: ["Approver"] },
-    { id: 3, name: "Lama", roles: ["Approver", "Requester"] }
+  { id: 1, name: "Hadi", roles: ["Requester"] },
+  { id: 2, name: "Haneen", roles: ["Approver"] },
+  { id: 3, name: "Lama", roles: ["Approver", "Requester"] },
 ];
 
 function getCurrentUser(req) {
-    const userId = Number(req.headers["user-id"]);
+  const userId = Number(req.headers["user-id"]);
 
-    if (!userId) return null;
+  if (!userId) return null;
 
-    return users.find( (user) => user.id === userId ) || null;
+  return users.find((user) => user.id === userId) || null;
 }
 
 function getRequestById(requestId) {
-    const request = db.prepare("SELECT * FROM requests WHERE id = ?").get(requestId)
+  const request = db
+    .prepare("SELECT * FROM requests WHERE id = ?")
+    .get(requestId);
 
-    return request;
+  return request;
 }
 
 app.get("/health", (req, res) => {
-    res.json({ status : "worked"})
+  res.json({ status: "worked" });
 });
 
 app.post("/requests", (req, res) => {
-
   const user = getCurrentUser(req);
 
   if (!user) {
@@ -39,7 +40,9 @@ app.post("/requests", (req, res) => {
   }
 
   if (!user.roles.includes("Requester")) {
-    return res.status(403).json({ error: "Only Requesters can create requests" });
+    return res
+      .status(403)
+      .json({ error: "Only Requesters can create requests" });
   }
 
   const { title, description, type } = req.body || {};
@@ -52,19 +55,19 @@ app.post("/requests", (req, res) => {
   if (!trimmedTitle) {
     return res.status(400).json({ error: "Title is required" });
   }
-  
+
   const allowedTypes = ["Access", "Finance", "General"];
   const safeType = allowedTypes.includes(type) ? type : "General";
 
   const nowDate = new Date().toISOString();
-  
+
   const insert = db.prepare(`
         INSERT INTO requests
         (title, description, type, status, createdByUserId, createdByUserName, approverComment, approvedByUserId, approvedByUserName, createdAt, updatedAt)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         `);
-        
-const info = insert.run(
+
+  const info = insert.run(
     trimmedTitle,
     description ?? null,
     safeType,
@@ -76,306 +79,348 @@ const info = insert.run(
     null,
     nowDate,
     nowDate
-    );
+  );
 
-    const created = db.prepare("SELECT * FROM requests WHERE id = ?").get(info.lastInsertRowid);
-    return res.status(201).json(created);
-
-})
+  const created = db
+    .prepare("SELECT * FROM requests WHERE id = ?")
+    .get(info.lastInsertRowid);
+  return res.status(201).json(created);
+});
 
 // gets all requests of a single user
 app.get("/requests", (req, res) => {
-    const user = getCurrentUser(req);
-    
-    if (!user) {
-        return res.status(401).json({ error: "Missing user-id in header" });
-    }
-    
-    const rows = db.prepare("SELECT * FROM requests WHERE createdByUserId = ? ORDER By id DESC").all(user.id);
-    
-    return res.json(rows);
+  const user = getCurrentUser(req);
 
-})
+  if (!user) {
+    return res.status(401).json({ error: "Missing user-id in header" });
+  }
+
+  const rows = db
+    .prepare(
+      "SELECT * FROM requests WHERE createdByUserId = ? ORDER By id DESC"
+    )
+    .all(user.id);
+
+  return res.json(rows);
+});
 
 app.post("/requests/:id/submit", (req, res) => {
-    const user = getCurrentUser(req);
+  const user = getCurrentUser(req);
 
-    if (!user) {
-        return res.status(401).json({ error: "Missing user-id in header" });
-    }
+  if (!user) {
+    return res.status(401).json({ error: "Missing user-id in header" });
+  }
 
-    if (!user.roles.includes("Requester")) {
-        return res.status(403).json({ error: "Only Requesters can submit requests" });
-    }
-    
-    const requestId = Number(req.params.id);
-    const request = getRequestById(requestId);
+  if (!user.roles.includes("Requester")) {
+    return res
+      .status(403)
+      .json({ error: "Only Requesters can submit requests" });
+  }
 
-    if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-    }
+  const requestId = Number(req.params.id);
+  const request = getRequestById(requestId);
 
-    if (request.createdByUserId !== user.id) {
-        return res.status(403).json({ error: "Only the user who created the request can submit" });
-    }
+  if (!request) {
+    return res.status(404).json({ error: "Request not found" });
+  }
 
-    if (request.status !== "Draft") {
-        return res.status(400).json({ error: "Only Draft requests can be submitted" });
-    }
+  if (request.createdByUserId !== user.id) {
+    return res
+      .status(403)
+      .json({ error: "Only the user who created the request can submit" });
+  }
 
-    const nowDate = new Date().toISOString();
-    
-    db.prepare(`
+  if (request.status !== "Draft") {
+    return res
+      .status(400)
+      .json({ error: "Only Draft requests can be submitted" });
+  }
+
+  const nowDate = new Date().toISOString();
+
+  db.prepare(
+    `
         UPDATE requests
         SET status = ?, updatedAt = ?
         WHERE id = ?
-        `).run("Submitted", nowDate, requestId);
-        
-    const updated = db.prepare("SELECT * FROM requests where id = ?").get(requestId);
-    
-    return res.status(200).json(updated);
-})
+        `
+  ).run("Submitted", nowDate, requestId);
+
+  const updated = db
+    .prepare("SELECT * FROM requests where id = ?")
+    .get(requestId);
+
+  return res.status(200).json(updated);
+});
 
 // If user is approver, it shows all pending requests except thier own (if the approver is also a requester), if the user is a requester, it will show them their pending requests
 app.get("/requests/pending", (req, res) => {
-    const user = getCurrentUser(req);
+  const user = getCurrentUser(req);
 
-    if (!user) {
-        return res.status(401).json({ error: "Missing user-id in header" });
-    }
+  if (!user) {
+    return res.status(401).json({ error: "Missing user-id in header" });
+  }
 
-    if (user.roles.includes("Approver")) {
-        return res.json(
-            db.prepare(`SELECT * FROM requests
+  if (user.roles.includes("Approver")) {
+    return res.json(
+      db
+        .prepare(
+          `SELECT * FROM requests
                         WHERE status = ? AND createdByUserId <> ?
                         ORDER By id DESC
-                        `).all("Submitted", user.id)
-        );
-    }
-    else if (user.roles.includes("Requester")) {
-        return res.json (
-            db.prepare(`SELECT * FROM requests
+                        `
+        )
+        .all("Submitted", user.id)
+    );
+  } else if (user.roles.includes("Requester")) {
+    return res.json(
+      db
+        .prepare(
+          `SELECT * FROM requests
                         WHERE status = ? AND createdByUserId = ?
                         ORDER By id DESC
-                `).all("Submitted", user.id)
-        );
-    }
-    else
-        res.status(403).json({ error: "User has no valid role" });
-
-})
+                `
+        )
+        .all("Submitted", user.id)
+    );
+  } else res.status(403).json({ error: "User has no valid role" });
+});
 
 app.post("/requests/:id/approve", (req, res) => {
-    const user = getCurrentUser(req);
+  const user = getCurrentUser(req);
 
-    if (!user) {
-        return res.status(401).json({ error: "Missing user-id in header" });
-    }
+  if (!user) {
+    return res.status(401).json({ error: "Missing user-id in header" });
+  }
 
-    if (!user.roles.includes("Approver")) {
-        return res.status(403).json( { error: "Only Approvers can approve requests" } )
-    }
+  if (!user.roles.includes("Approver")) {
+    return res
+      .status(403)
+      .json({ error: "Only Approvers can approve requests" });
+  }
 
-    const requestId = Number(req.params.id);
-    const request = getRequestById(requestId);
+  const requestId = Number(req.params.id);
+  const request = getRequestById(requestId);
 
-    if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-    }
+  if (!request) {
+    return res.status(404).json({ error: "Request not found" });
+  }
 
-    if (request.status !== "Submitted") {
-        return res.status(400).json({ error: "Only submitted requestes can be approved" });
-    }
-    if (request.createdByUserId === user.id) {
-        return res.status(403).json({ error: "Approver can't approve requests they created" });
-    }
+  if (request.status !== "Submitted") {
+    return res
+      .status(400)
+      .json({ error: "Only submitted requestes can be approved" });
+  }
+  if (request.createdByUserId === user.id) {
+    return res
+      .status(403)
+      .json({ error: "Approver can't approve requests they created" });
+  }
 
-    const { approverComment } = req.body || {};
-    
-    if (typeof approverComment !== "string" || !approverComment.trim()) {
-        return res.status(400).json({ error: "Approver comment is required" });
-    }
-    
-    const nowDate = new Date().toISOString();
+  const { approverComment } = req.body || {};
 
-    db.prepare(`
+  if (typeof approverComment !== "string" || !approverComment.trim()) {
+    return res.status(400).json({ error: "Approver comment is required" });
+  }
+
+  const nowDate = new Date().toISOString();
+
+  db.prepare(
+    `
                 UPDATE requests
                 SET status = ?, approverComment = ?,  approvedByUserId = ?, approvedByUserName = ?, updatedAt = ?
                 WHERE id = ?
-        `).run(
-            "Approved",
-            approverComment.trim(),
-            user.id,
-            user.name,
-            nowDate,
-            requestId
-        );
+        `
+  ).run(
+    "Approved",
+    approverComment.trim(),
+    user.id,
+    user.name,
+    nowDate,
+    requestId
+  );
 
-    const updated = db.prepare(`SELECT * FROM requests WHERE id = ?`).get(requestId);
+  const updated = db
+    .prepare(`SELECT * FROM requests WHERE id = ?`)
+    .get(requestId);
 
-    return res.status(200).json(updated);
-
-})
+  return res.status(200).json(updated);
+});
 
 app.post("/requests/:id/reject", (req, res) => {
-    const user = getCurrentUser(req);
+  const user = getCurrentUser(req);
 
-    if (!user) {
-        return res.status(401).json({ error: "Missing user-id in header" });
-    }
+  if (!user) {
+    return res.status(401).json({ error: "Missing user-id in header" });
+  }
 
-    if (!user.roles.includes("Approver")) {
-        return res.status(403).json( { error: "Only Approvers can reject requests" } )
-    }
+  if (!user.roles.includes("Approver")) {
+    return res
+      .status(403)
+      .json({ error: "Only Approvers can reject requests" });
+  }
 
-    const requestId = Number(req.params.id);
-    const request = getRequestById(requestId);
+  const requestId = Number(req.params.id);
+  const request = getRequestById(requestId);
 
-    if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-    }
+  if (!request) {
+    return res.status(404).json({ error: "Request not found" });
+  }
 
-    if (request.status !== "Submitted") {
-        return res.status(400).json({ error: "Only submitted requestes can be rejected" });
-    }
-    if (request.createdByUserId === user.id) {
-        return res.status(403).json({ error: "Approver can't reject requests they created" });
-    }
+  if (request.status !== "Submitted") {
+    return res
+      .status(400)
+      .json({ error: "Only submitted requestes can be rejected" });
+  }
+  if (request.createdByUserId === user.id) {
+    return res
+      .status(403)
+      .json({ error: "Approver can't reject requests they created" });
+  }
 
-    const { approverComment } = req.body || {};
-    
-    if (typeof approverComment !== "string" || !approverComment.trim()) {
-        return res.status(400).json({ error: "Approver comment is required" });
-    }
+  const { approverComment } = req.body || {};
 
-    const nowDate = new Date().toISOString();
+  if (typeof approverComment !== "string" || !approverComment.trim()) {
+    return res.status(400).json({ error: "Approver comment is required" });
+  }
 
-    db.prepare(`
+  const nowDate = new Date().toISOString();
+
+  db.prepare(
+    `
         UPDATE requests
         SET status = ?, approverComment = ?, approvedByUserId = ?, approvedByUserName = ?, updatedAt = ?
         WHERE id = ?
-        `).run(
-            "Rejected",
-            approverComment.trim(),
-            user.id,
-            user.name,
-            nowDate,
-            requestId
-        );
+        `
+  ).run(
+    "Rejected",
+    approverComment.trim(),
+    user.id,
+    user.name,
+    nowDate,
+    requestId
+  );
 
-    const updated = db.prepare(`SELECT * FROM requests WHERE id = ?`).get(requestId);
+  const updated = db
+    .prepare(`SELECT * FROM requests WHERE id = ?`)
+    .get(requestId);
 
-    return res.status(200).json(updated);
-})
+  return res.status(200).json(updated);
+});
 
-app.patch ("/requests/:id/edit", (req, res) => {
-    const user = getCurrentUser(req);
+app.patch("/requests/:id/edit", (req, res) => {
+  const user = getCurrentUser(req);
 
-    if (!user) {
-        return res.status(401).json({ error: "Missing user-id in header" });
+  if (!user) {
+    return res.status(401).json({ error: "Missing user-id in header" });
+  }
+
+  if (!user.roles.includes("Requester")) {
+    return res.status(403).json({ error: "Only Requesters can edit requests" });
+  }
+
+  const requestId = Number(req.params.id);
+  const request = getRequestById(requestId);
+
+  if (!request) {
+    return res.status(404).json({ error: "Request not found" });
+  }
+
+  if (request.createdByUserId !== user.id) {
+    return res
+      .status(403)
+      .json({ error: "Only the user who created the request can edit" });
+  }
+
+  if (request.status !== "Draft") {
+    return res.status(400).json({ error: "Only Draft requests can be edited" });
+  }
+
+  const { title, description, type } = req.body || {};
+
+  if (!title && !description && !type) {
+    return res.status(400).json({ error: "Request body is required" });
+  }
+
+  let newTitle = request.title;
+  let newDescription = request.description;
+  let newType = request.type;
+
+  if (title !== undefined) {
+    if (typeof title !== "string") {
+      return res.status(400).json({ error: "Title must be a string" });
     }
-
-    if (!user.roles.includes("Requester")) {
-        return res.status(403).json({ error: "Only Requesters can edit requests" });
+    const trimmedTitle = title.trim();
+    if (!trimmedTitle) {
+      return res.status(400).json({ error: "Title is required" });
     }
+    newTitle = trimmedTitle;
+  }
 
-    const requestId = Number(req.params.id);
-    const request = getRequestById(requestId);
-
-    if (!request) {
-        return res.status(404).json({ error: "Request not found" });
+  if (description !== undefined) {
+    if (typeof description !== "string") {
+      return res.status(400).json({ error: "Description must be a string" });
     }
+    newDescription = description;
+  }
 
-    if (request.createdByUserId !== user.id) {
-        return res.status(403).json({ error: "Only the user who created the request can edit" });
-    }
+  if (type !== undefined) {
+    const allowedTypes = ["Access", "Finance", "General"];
+    const safeType = allowedTypes.includes(type) ? type : "General";
+    newType = safeType;
+  }
 
-    if (request.status !== "Draft") {
-        return res.status(400).json({ error: "Only Draft requests can be edited" })
-    }
+  const nowDate = new Date().toISOString();
 
-    const { title, description, type } = req.body || {};
-
-    if (!title && !description && !type) {
-        return res.status(400).json({ error: "Request body is required" });
-    }
-
-    let newTitle = request.title;
-    let newDescription = request.description;
-    let newType = request.type;
-
-    if (title !== undefined) {
-        if (typeof title !== "string") {
-            return res.status(400).json({ error: "Title must be a string" });
-        }
-        const trimmedTitle = title.trim();
-        if (!trimmedTitle) {
-            return res.status(400).json({ error: "Title is required" });
-        }
-        newTitle = trimmedTitle;
-    }
-
-    if (description !== undefined) {
-        if (typeof description !== "string") {
-            return res.status(400).json({ error: "Description must be a string" });
-        }
-        newDescription = description;
-    }
-
-    if (type !== undefined) {
-        const allowedTypes = ["Access", "Finance", "General"];
-        const safeType = allowedTypes.includes(type) ? type : "General";
-        newType = safeType;
-    }
-
-    const nowDate = new Date().toISOString();
-
-    db.prepare(`
+  db.prepare(
+    `
         UPDATE requests
         SET title = ?, description = ?, type = ?, updatedAt = ?
         WHERE id = ?
-        `).run(
-            newTitle,
-            newDescription,
-            newType,
-            nowDate,
-            requestId
-        )
+        `
+  ).run(newTitle, newDescription, newType, nowDate, requestId);
 
-    const updated = db.prepare(`SELECT * FROM requests WHERE id = ?`).get(requestId);
+  const updated = db
+    .prepare(`SELECT * FROM requests WHERE id = ?`)
+    .get(requestId);
 
-    return res.status(200).json(updated);
-})
+  return res.status(200).json(updated);
+});
 
 app.delete("/requests/:id", (req, res) => {
-    const user = getCurrentUser(req);
+  const user = getCurrentUser(req);
 
-    if (!user) {
-        return res.status(401).json({ error: "Missing user-id in header" });
-    }
+  if (!user) {
+    return res.status(401).json({ error: "Missing user-id in header" });
+  }
 
-    if (!user.roles.includes("Requester")) {
-        return res.status(403).json({ error: "Only Requesters can delete requests" });
-    }
+  if (!user.roles.includes("Requester")) {
+    return res
+      .status(403)
+      .json({ error: "Only Requesters can delete requests" });
+  }
 
-    const requestId = Number(req.params.id);
-    const request = getRequestById(requestId);
+  const requestId = Number(req.params.id);
+  const request = getRequestById(requestId);
 
-    if (!request) {
-        return res.status(404).json({ error: "Request not found" });
-    }
+  if (!request) {
+    return res.status(404).json({ error: "Request not found" });
+  }
 
-    if (request.createdByUserId !== user.id) {
-        return res.status(403).json({ error: "Only the user who created the request can delete" });
-    }
+  if (request.createdByUserId !== user.id) {
+    return res
+      .status(403)
+      .json({ error: "Only the user who created the request can delete" });
+  }
 
-    if (request.status !== "Draft") {
-        return res.status(400).json({ error: "Only Draft requests can be deleted" })
-    }
+  if (request.status !== "Draft") {
+    return res
+      .status(400)
+      .json({ error: "Only Draft requests can be deleted" });
+  }
 
-    db.prepare(`Delete FROM requests WHERE id = ?`).run(requestId);
-    return res.status(204).send();
-
-})
+  db.prepare(`Delete FROM requests WHERE id = ?`).run(requestId);
+  return res.status(204).send();
+});
 
 module.exports = app;
