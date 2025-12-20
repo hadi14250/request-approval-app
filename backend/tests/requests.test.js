@@ -78,16 +78,18 @@ describe("POST /requests/:id/submit", () => {
 
     describe("Submit valid draft request", () => {
         it("should respond with 200 and send submitted request as json", async () => {
-            const CreateResponse = await request(app)
+            const createResponse = await request(app)
             .post("/requests")
             .set("user-id", "1") // user-id 1 belongs to a requester
             .send({
                 title: "VPN Access",
                 description: "Need VPN for work",
                 type: "Work"
-            })
+            });
+            
+            expect(createResponse.statusCode).toBe(201);
 
-            const id = CreateResponse.body.id;
+            const id = createResponse.body.id;
 
             const submitResponse = await request(app)
             .post(`/requests/${id}/submit`)
@@ -100,16 +102,18 @@ describe("POST /requests/:id/submit", () => {
 
     describe("Submit non-draft request", () => {
         it("should respond with 400 status code", async () => {
-            const CreateResponse = await request(app)
+            const createResponse = await request(app)
             .post("/requests")
             .set("user-id", "1") // user-id 1 belongs to a requester
             .send({
                 title: "VPN Access",
                 description: "Need VPN for work",
                 type: "Work"
-            })
+            });
 
-            const id = CreateResponse.body.id;
+            expect(createResponse.statusCode).toBe(201);
+
+            const id = createResponse.body.id;
 
             const submitResponse = await request(app)
             .post(`/requests/${id}/submit`)
@@ -127,16 +131,18 @@ describe("POST /requests/:id/submit", () => {
 
     describe("Submit draft request as an approver (not requester", () => {
         it("should respond with 403 status code", async () => {
-            const CreateResponse = await request(app)
+            const createResponse = await request(app)
             .post("/requests")
             .set("user-id", "1") // user-id 1 belongs to a requester
             .send({
                 title: "VPN Access",
                 description: "Need VPN for work",
                 type: "Work"
-            })
+            });
 
-            const id = CreateResponse.body.id;
+            expect(createResponse.statusCode).toBe(201);
+
+            const id = createResponse.body.id;
 
             const submitResponse = await request(app)
             .post(`/requests/${id}/submit`)
@@ -161,6 +167,8 @@ describe("POST /requests/:id/approve", () => {
                 description: "Need VPN for work",
                 type: "Work"
             });
+
+            expect(createResponse.statusCode).toBe(201);
 
             const id = createResponse.body.id;
 
@@ -195,6 +203,8 @@ describe("POST /requests/:id/approve", () => {
                 type: "Work"
             });
 
+            expect(createResponse.statusCode).toBe(201);
+
             const id = createResponse.body.id;
 
             const submitResponse = await request(app)
@@ -226,6 +236,8 @@ describe("POST /requests/:id/approve", () => {
                 description: "Need VPN for work",
                 type: "Work"
             });
+
+            expect(createResponse.statusCode).toBe(201);
 
             const id = createResponse.body.id;
 
@@ -267,6 +279,8 @@ describe("POST /requests/:id/approve", () => {
                 type: "Work"
             });
 
+            expect(createResponse.statusCode).toBe(201);
+
             const id = createResponse.body.id;
 
             const submitResponse = await request(app)
@@ -297,6 +311,8 @@ describe("POST /requests/:id/reject", () => {
                 description: "Need VPN for work",
                 type: "Work"
             });
+
+            expect(createResponse.statusCode).toBe(201);
 
             const id = createResponse.body.id;
 
@@ -331,6 +347,8 @@ describe("POST /requests/:id/reject", () => {
                 type: "Work"
             });
 
+            expect(createResponse.statusCode).toBe(201);
+
             const id = createResponse.body.id;
 
             const submitResponse = await request(app)
@@ -362,6 +380,8 @@ describe("POST /requests/:id/reject", () => {
                 description: "Need VPN for work",
                 type: "Work"
             });
+
+            expect(createResponse.statusCode).toBe(201);
 
             const id = createResponse.body.id;
 
@@ -403,6 +423,8 @@ describe("POST /requests/:id/reject", () => {
                 type: "Work"
             });
 
+            expect(createResponse.statusCode).toBe(201);
+
             const id = createResponse.body.id;
 
             const submitResponse = await request(app)
@@ -421,3 +443,71 @@ describe("POST /requests/:id/reject", () => {
     });
 })
 
+describe("POST /requests/:id/edit", () => {
+
+    describe("edit draft request", () => {
+        it("should respond with 200 status code and send edited request as json", async () => {
+            const createResponse = await request(app)
+            .post("/requests")
+            .set("user-id", "1")
+            .send({
+                title: "VPN Access",
+                description: "Need VPN for work",
+                type: "Work"
+            });
+            
+            expect(createResponse.statusCode).toBe(201);
+
+            const id = createResponse.body.id;
+
+            const editResponse = await request(app)
+            .patch(`/requests/${id}/edit`)
+            .set("user-id", "1")
+            .send({
+                title: "new title",
+                description: "This description has been edited",
+                type: "General"
+            });
+
+            expect(editResponse.statusCode).toBe(200);
+            expect(editResponse.body.status).toBe("Draft");
+            expect(editResponse.body.title).toBe("new title");
+
+        })
+    });
+
+    describe("edit submitted request", () => {
+        it("should respond with 400 status code", async () => {
+            const createResponse = await request(app)
+            .post("/requests")
+            .set("user-id", "1")
+            .send({
+                title: "VPN Access",
+                description: "Need VPN for work",
+                type: "Work"
+            });
+            
+            expect(createResponse.statusCode).toBe(201);
+
+            const id = createResponse.body.id;
+
+            const submitResponse = await request(app)
+            .post(`/requests/${id}/submit`)
+            .set("user-id", "1")
+
+            expect(submitResponse.statusCode).toBe(200);
+            expect(submitResponse.body.status).toBe("Submitted");
+
+            const editResponse = await request(app)
+            .patch(`/requests/${id}/edit`)
+            .set("user-id", "1")
+            .send({
+                title: "new title",
+                description: "This description has been edited",
+                type: "General"
+            });
+
+            expect(editResponse.statusCode).toBe(400);
+        })
+    });
+})
