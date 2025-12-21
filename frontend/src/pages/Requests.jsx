@@ -33,10 +33,20 @@ export default function Requests() {
 
   return (
     <div className="page-container">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "1.5rem",
+        }}
+      >
         <h1 style={{ margin: 0 }}>My Requests</h1>
         {isRequester && (
-          <button className="btn btn-primary" onClick={() => navigate("/requests/new")}>
+          <button
+            className="btn btn-primary"
+            onClick={() => navigate("/requests/new")}
+          >
             Create New Request
           </button>
         )}
@@ -46,7 +56,10 @@ export default function Requests() {
         <div className="empty-state">
           <p>No requests yet</p>
           {isRequester && (
-            <button className="btn btn-primary" onClick={() => navigate("/requests/new")}>
+            <button
+              className="btn btn-primary"
+              onClick={() => navigate("/requests/new")}
+            >
               Create Your First Request
             </button>
           )}
@@ -60,12 +73,27 @@ export default function Requests() {
               style={{ cursor: "pointer" }}
               onClick={() => navigate(`/requests/${request.id}`)}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start", marginBottom: "0.5rem" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "start",
+                  marginBottom: "0.5rem",
+                }}
+              >
                 <h3 style={{ margin: 0 }}>{request.title}</h3>
-                <span className={getStatusClass(request.status)}>{request.status}</span>
+                <span className={getStatusClass(request.status)}>
+                  {request.status}
+                </span>
               </div>
 
-              <div style={{ color: "#666", fontSize: "0.9rem", marginBottom: "0.5rem" }}>
+              <div
+                style={{
+                  color: "#666",
+                  fontSize: "0.9rem",
+                  marginBottom: "0.5rem",
+                }}
+              >
                 <span>Type: {request.type}</span>
                 <span style={{ marginLeft: "1rem" }}>
                   Created: {new Date(request.createdAt).toLocaleDateString()}

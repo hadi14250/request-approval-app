@@ -38,7 +38,9 @@ function useMakeRequest(url, method = "GET", userId, body = null) {
             payload = JSON.parse(text);
           } catch (parseError) {
             if (!res.ok) {
-              throw new Error(`Request failed: ${res.status} ${res.statusText}`);
+              throw new Error(
+                `Request failed: ${res.status} ${res.statusText}`
+              );
             }
             throw new Error(`Invalid JSON response: ${parseError.message}`);
           }
