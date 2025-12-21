@@ -1,7 +1,4 @@
 ### Pending tasks:
-- Seeding scripts to seed sample requests
-- add seed.js instructions
-- add section to explain that users are in code and do not need seeding
 - update file structure of read me to include seed.js
 
 # Request & Approval Workflow System
@@ -68,8 +65,6 @@ Requests follow a lifecycle: **Draft** → **Submitted** → **Approved/Rejected
 - **Node.js** - Runtime environment
 - **Express 5.2** - Web framework
 - **better-sqlite3 12.5** - Database
-- **CORS** - Cross-origin resource sharing
-- **dotenv** - Environment variable management
 
 ### Testing
 - **Jest** - Testing framework
@@ -101,7 +96,10 @@ npm install
 # Create .env file (optional - you can copy from .env.example)
 cp .env.example .env
 
-# Start the server (database will be created automatically on first run)
+# Populate the database with sample requests. The database is created automatically, and seeding is skipped if data already exists.
+npm run seed
+
+# Start the server
 npm start
 ```
 
@@ -188,7 +186,7 @@ request-approval-workflow/
 
 - **POST** `/requests` – Create request (Draft)
 - **PATCH** `/requests/:id/edit` – Edit draft request
-- **POST** `/requests/:id/submit` – Submit request
+- **POST** `/requests/:id/submit` – Submit draft request
 - **GET** `/requests` – View own requests
 - **GET** `/requests/pending` – View pending approvals
 - **POST** `/requests/:id/approve` – Approve request
@@ -234,21 +232,7 @@ request-approval-workflow/
 
 **Tradeoff:** The app has minimal global state (just current user), so Context API is appropriate. Redux would be overkill.
 
-### 3. Custom Hook vs Data Fetching Library
-**Decision:** Built custom `useMakeRequest` hook instead of using React Query or SWR
-
-**Reasoning:**
-- **Pros:**
-  - No additional dependencies
-  - Full control over fetch logic
-
-- **Cons:**
-  - Missing features like caching, automatic refetching, optimistic updates
-  - More boilerplate code
-
-**Tradeoff:** For this assignment, showing I understand how to build a custom hook was valuable. In production, I'd use React Query for better UX and less code.
-
-### 4. Simulated Authentication vs Real Auth
+### 3. Simulated Authentication vs Real Auth
 **Decision:** User dropdown to simulate authentication
 
 **Reasoning:**
@@ -263,7 +247,7 @@ request-approval-workflow/
 
 **Tradeoff:** Assignment scope prioritized workflow logic. Real auth would require JWT tokens, password hashing, sessions, etc.
 
-### 5. Synchronous Database Queries vs Async
+### 4. Synchronous Database Queries vs Async
 **Decision:** Used better-sqlite3's synchronous API
 
 **Reasoning:**
@@ -282,32 +266,33 @@ request-approval-workflow/
 
 ## Assumptions
 
-### 1. Request Creation
+### 1. User Management
+**Assumption:** Users and roles are predefined in backend code (`backend/app.js`) and identified via a `user-id` request header.
+
+**Reasoning:** User authentication is out of scope.
+
+**Note:** users can be switched easily using a dropdown selector in the frontend.
+
+
+### 2. Request Creation
 **Assumption:** When a request is created via POST `/requests`, it is automatically saved as a **Draft** status.
 
 **Reasoning:** This allows users to create a request and decide later whether to submit it. They can edit or delete drafts before submitting.
 
-### 2. Request Creation Permissions
+### 3. Request Creation Permissions
 **Assumption:** Only users with the **Requester** role can create requests.
 
-**Reasoning:** If a user only has the Approver role, attempting to create a request will return a `403 Unauthorized` response. This enforces role-based access control.
-
-### 3. Approver Comments
+### 4. Approver Comments
 **Assumption:** Approver comments are mandatory in the backend when approving or rejecting.
-
-**Reasoning:** If no comment is provided by frontend, the system defaults to "Approved" or "Rejected". While the UI prompts for a comment, the backend does not accept empty comments, so if the approver leaves the comment empty, react defaults  the comments "Approver". or "Rejected"
 
 **Note:** The assignment mentioned comments should be available, but didn't specify if they're mandatory. I implemented them as manadatory in the backend, and optional in frontend as they default to "Approved" or "Rejected" before sending the POST request.
 
-### 4. User Authentication
-**Assumption:** User authentication is **simulated** using a dropdown selector.
-
-**Reasoning:** The assignment focused on workflow logic, not authentication systems. Both backend and frontend have hardcoded users (same users, names and roles), and the backend uses a `user-id` header to identify the current user.
-
 ### 5. Request Type
-**Assumption:** Request types (Access, Finance, General) are for **categorization only**.
+**Assumption:** There are only three request types: Access, Finance, and General
 
-**Reasoning:** Types don't affect workflow or permissions in this implementation. In a real system, different types might route to different approvers or require different approval levels.
+**Reasoning:** Types don't affect workflow or permissions in this implementation.
+
+**Note:** If type field is not equal to Access or Finance, it will default to General in the backend.
 
 ### 6. Users Cannot Approve Their Own Requests
 **Assumption:** Users with both approver and requester roles shouldn't approve their own requests.
