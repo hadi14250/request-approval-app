@@ -178,8 +178,9 @@ app.post("/requests/:id/submit", (req, res) => {
 });
 
 // Approver only endpoint
-// If user is approver, it shows all pending requests except thier own (if the approver is also a requester)
-// if the user is a requester, it will show them their pending requests
+// If user is Approver, it shows all pending requests except thier own (if the Approver is also a Requester)
+// if the user is a Requester, it will show them their pending requests
+// if user is both an Approver and Requester, it will not return their own submitted requests
 app.get("/requests/pending", (req, res) => {
   const user = getCurrentUser(req);
 

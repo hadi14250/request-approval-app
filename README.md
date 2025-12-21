@@ -1,6 +1,8 @@
 ### Pending tasks:
 - Seeding scripts to seed sample requests
-- add approved by in single request page, right now user can't see who approved or rejected
+- add seed.js instructions
+- add section to explain that users are in code and do not need seeding
+- update file structure of read me to include seed.js
 
 # Request & Approval Workflow System
 
@@ -334,6 +336,7 @@ request-approval-workflow/
    - Migrate to PostgreSQL for production
 
 4. **API Enhancements**
+   - Add endpoint to fetch one single request
    - Add pagination for request lists (limit/offset)
    - Add filtering (by status, type, date range)
    - Add sorting options (by date, status, type)
@@ -355,6 +358,7 @@ request-approval-workflow/
 1. **User Experience**
    - Toast notifications for success/error messages
    - Confirmation modals instead of browser alerts
+   - Add approved or rejected by fields for single requests page
 
 2. **Form Improvements**
    - Real-time validation with error messages
