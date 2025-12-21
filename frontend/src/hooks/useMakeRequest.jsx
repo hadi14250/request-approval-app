@@ -6,7 +6,10 @@ function useMakeRequest(url, method = "GET", userId, body = null) {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (!url) return;
+    if (!url) {
+      setLoading(false);
+      return;
+    }
 
     const controller = new AbortController();
 

@@ -191,7 +191,7 @@ export default function RequestDetails() {
 
   const isDraft = request.status === "Draft";
   const isSubmitted = request.status === "Submitted";
-  const isOwnRequest = request.createdBy === currentUser.id;
+  const isOwnRequest = request.createdByUserId === currentUser.id;
 
   return (
     <div className="page-container">
