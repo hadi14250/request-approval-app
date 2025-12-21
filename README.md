@@ -7,6 +7,7 @@ A simple request approval workflow application built with React and Node.js, whe
 
 ## Table of Contents
 - [Overview](#overview)
+- [Live Demo](#live-demo)
 - [Features](#features)
 - [Tech Stack](#tech-stack)
 - [Setup Instructions](#setup-instructions)
