@@ -1,6 +1,3 @@
-### Pending tasks:
-- update file structure of read me to include seed.js
-
 # Request & Approval Workflow System
 
 A simple request approval workflow application built with React and Node.js, where users can submit requests and approvers can review them.
@@ -151,6 +148,7 @@ request-approval-workflow/
 │   ├── server.js                    # Express server entry point
 │   ├── app.js                       # Express app setup and routes
 │   ├── db.js                        # Database setup and initialization
+│   ├── seed.js                      # Database seed script
 │   ├── tests/
 │   │   └── requests.test.js         # API tests
 │   ├── .env.example                 # Environment variables example
