@@ -239,7 +239,7 @@ app.post("/requests/:id/approve", (req, res) => {
   if (request.status !== "Submitted") {
     return res
       .status(400)
-      .json({ error: "Only submitted requestes can be approved" });
+      .json({ error: "Only submitted requests can be approved" });
   }
   if (request.createdByUserId === user.id) {
     return res
@@ -343,7 +343,7 @@ app.post("/requests/:id/reject", (req, res) => {
 });
 
 // Requester only endpoint
-// Edits requests only if status is "Draft", takes optional fields: title, decription, and type
+// Edits requests only if status is "Draft", takes optional fields: title, description, and type
 // returns edited request if successfull
 app.patch("/requests/:id/edit", (req, res) => {
   const user = getCurrentUser(req);
@@ -425,7 +425,7 @@ app.patch("/requests/:id/edit", (req, res) => {
 });
 
 // Requester only endpoint
-// Deletes a request from the Databse
+// Deletes a request from the database
 app.delete("/requests/:id", (req, res) => {
   const user = getCurrentUser(req);
 
