@@ -1,6 +1,3 @@
-### pemding tasks:
-- if there's time, implement length checking in backend and front end
-
 # Request & Approval Workflow System
 
 A simple request approval workflow application built with React and Node.js, where users can submit requests and approvers can review them.
