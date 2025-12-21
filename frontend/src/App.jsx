@@ -5,6 +5,8 @@ import UserSelector from "./components/UserSelector";
 import Home from "./pages/Home";
 import Requests from "./pages/Requests";
 import Pending from "./pages/Pending";
+import RequestDetails from "./pages/RequestDetails";
+import RequestForm from "./components/RequestForm";
 
 function App() {
   return (
@@ -21,7 +23,10 @@ function App() {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/requests" element={<Requests />} />
+        <Route path="/requests/new" element={<RequestForm />} />
         <Route path="/requests/pending" element={<Pending />} />
+        <Route path="/requests/:id" element={<RequestDetails />} />
+        <Route path="/requests/:id/edit" element={<RequestForm />} />
       </Routes>
     </UserProvider>
   );
