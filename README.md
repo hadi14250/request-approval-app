@@ -1,3 +1,6 @@
+### pemding tasks:
+- if there's time, implement length checking in backend and front end
+
 # Request & Approval Workflow System
 
 A simple request approval workflow application built with React and Node.js, where users can submit requests and approvers can review them.
@@ -22,6 +25,16 @@ This is a workflow management system with two user roles:
 - **Approvers**: Can view submitted requests and approve or reject them
 
 Requests follow a lifecycle: **Draft** → **Submitted** → **Approved/Rejected**
+
+---
+
+## Live Demo
+
+**Deployed Application:** https://request-approval-z5tx5emjt-hadis-projects-2c099ace.vercel.app/
+
+The application is deployed with:
+- Frontend on Vercel
+- Backend on Railway
 
 ---
 
@@ -259,6 +272,18 @@ request-approval-workflow/
   - Different from typical Node.js async patterns
 
 **Tradeoff:** SQLite is single-threaded anyway, so synchronous API is actually more efficient here. Would use async with PostgreSQL.
+
+### 5. Vercel and Railway for Deployment
+**Decision:** Used Vercel for frontend and Railway for backend
+
+**Reasoning:**
+- **Pros:**
+  - Vercel is designed for frontend frameworks like React and handles the build automatically
+  - Railway makes it easy to deploy Node.js backends without much configuration
+  - Both have simple deployment processes (connect GitHub repository and deploy)
+
+- **Cons:**
+  - Frontend and backend are on separate platforms, so need to configure CORS
 
 ---
 
