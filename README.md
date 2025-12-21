@@ -30,7 +30,7 @@ Requests follow a lifecycle: **Draft** → **Submitted** → **Approved/Rejected
 
 ## Live Demo
 
-**Deployed Application:** https://request-approval-z5tx5emjt-hadis-projects-2c099ace.vercel.app/
+**Deployed Application:** https://request-approval-z5tx5emjt-hadis-projects-2c099ace.vercel.app
 
 The application is deployed with:
 - Frontend on Vercel
