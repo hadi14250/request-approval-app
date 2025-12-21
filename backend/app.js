@@ -4,6 +4,7 @@ const db = require("./db");
 
 const app = express();
 
+// splits env CORS_ORIGINS links and whitelists them
 const allowedOrigins = (process.env.CORS_ORIGINS || "")
   .split(",")
   .map(s => s.trim())
@@ -48,6 +49,9 @@ app.get("/health", (req, res) => {
   res.json({ status: "worked" });
 });
 
+// Requester only endpoint
+// creates a requests, requires body with title, description, and type
+// returns the created request if successful
 app.post("/requests", (req, res) => {
   const user = getCurrentUser(req);
 
@@ -103,6 +107,7 @@ app.post("/requests", (req, res) => {
   return res.status(201).json(created);
 });
 
+// Requester only endpoint
 // gets all requests of a single user
 app.get("/requests", (req, res) => {
   const user = getCurrentUser(req);
@@ -120,6 +125,9 @@ app.get("/requests", (req, res) => {
   return res.json(rows);
 });
 
+// Requester only endpoint
+// changes request status from "Draft" to "Submitted", fails if status is not "Draft"
+// returns submitted request if successfull
 app.post("/requests/:id/submit", (req, res) => {
   const user = getCurrentUser(req);
 
@@ -169,7 +177,9 @@ app.post("/requests/:id/submit", (req, res) => {
   return res.status(200).json(updated);
 });
 
-// If user is approver, it shows all pending requests except thier own (if the approver is also a requester), if the user is a requester, it will show them their pending requests
+// Approver only endpoint
+// If user is approver, it shows all pending requests except thier own (if the approver is also a requester)
+// if the user is a requester, it will show them their pending requests
 app.get("/requests/pending", (req, res) => {
   const user = getCurrentUser(req);
 
@@ -202,6 +212,10 @@ app.get("/requests/pending", (req, res) => {
   } else res.status(403).json({ error: "User has no valid role" });
 });
 
+// Approver only endpoint
+// changes request status from "Submitted" to "Approved", fails if status is not "Submitted"
+// requires body with approverComment
+// returns approved request if successfull
 app.post("/requests/:id/approve", (req, res) => {
   const user = getCurrentUser(req);
 
@@ -263,6 +277,10 @@ app.post("/requests/:id/approve", (req, res) => {
   return res.status(200).json(updated);
 });
 
+// Approver only endpoint
+// changes request status from "Submitted" to "Rejected", fails if status is not "Submitted"
+// requires body with approverComment
+// returns rejected request if successfull
 app.post("/requests/:id/reject", (req, res) => {
   const user = getCurrentUser(req);
 
@@ -324,6 +342,9 @@ app.post("/requests/:id/reject", (req, res) => {
   return res.status(200).json(updated);
 });
 
+// Requester only endpoint
+// Edits requests only if status is "Draft", takes optional fields: title, decription, and type
+// returns edited request if successfull
 app.patch("/requests/:id/edit", (req, res) => {
   const user = getCurrentUser(req);
 
@@ -403,6 +424,8 @@ app.patch("/requests/:id/edit", (req, res) => {
   return res.status(200).json(updated);
 });
 
+// Requester only endpoint
+// Deletes a request from the Databse
 app.delete("/requests/:id", (req, res) => {
   const user = getCurrentUser(req);
 

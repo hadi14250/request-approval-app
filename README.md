@@ -193,7 +193,7 @@ request-approval-workflow/
 - **POST** `/requests/:id/reject` – Reject request
 - **DELETE** `/requests/:id` – Delete draft request
 
-**Note:** All endpoints validate input and return appropriate HTTP status codes (400, 401, 403, 404).
+**Note:** All endpoints validate input and return appropriate HTTP status codes (200, 201, 400, 401, 403, 404).
 
 ---
 
