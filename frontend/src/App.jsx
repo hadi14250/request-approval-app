@@ -9,12 +9,13 @@ import Pending from "./pages/Pending";
 function App() {
   return (
     <UserProvider>
-      <UserSelector />
-
-      <nav style={{ display: "flex", gap: 12, padding: "1rem" }}>
-        <Link to="/">Home</Link>
-        <Link to="/requests">Requests</Link>
-        <Link to="/requests/pending">Pending Approval</Link>
+      <nav className="navbar">
+        <div className="navbar-links">
+          <Link to="/">Home</Link>
+          <Link to="/requests">Requests</Link>
+          <Link to="/requests/pending">Pending Approval</Link>
+        </div>
+        <UserSelector />
       </nav>
 
       <Routes>

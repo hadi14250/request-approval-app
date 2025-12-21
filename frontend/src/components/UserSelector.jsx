@@ -10,16 +10,8 @@ export default function UserSelector() {
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        top: "1rem",
-        right: "1rem",
-        padding: "0.75rem",
-        zIndex: 1000,
-      }}
-    >
-      <label htmlFor="user-select" style={{ marginRight: "0.5rem" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+      <label htmlFor="user-select" style={{ margin: 0, fontSize: "0.9rem" }}>
         Current User:
       </label>
       <select
@@ -28,7 +20,7 @@ export default function UserSelector() {
         onChange={handleUserChange}
         style={{
           padding: "0.5rem",
-          fontSize: "1rem",
+          fontSize: "0.9rem",
           borderRadius: "4px",
           border: "1px solid #646cff",
           cursor: "pointer",
