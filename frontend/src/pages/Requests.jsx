@@ -1,13 +1,14 @@
 import useMakeRequest from "../hooks/useMakeRequest";
+import { useUser } from "../context/UserContext";
 
 export default function Requests() {
-
   const API_URL = import.meta.env.VITE_API_URL;
+  const { currentUser } = useUser();
 
   const { data, loading, error } = useMakeRequest(
     `${API_URL}/requests`,
     "GET",
-    1
+    currentUser.id
   )
 
   if (loading) return <p>Loading...</p>

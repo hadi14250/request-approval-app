@@ -32,7 +32,17 @@ function useMakeRequest(url, method = "GET", userId, body = null) {
 
         let payload = null;
         const text = await res.text();
-        if (text) payload = JSON.parse(text);
+
+        if (text) {
+          try {
+            payload = JSON.parse(text);
+          } catch (parseError) {
+            if (!res.ok) {
+              throw new Error(`Request failed: ${res.status} ${res.statusText}`);
+            }
+            throw new Error(`Invalid JSON response: ${parseError.message}`);
+          }
+        }
 
         if (!res.ok) {
           throw new Error(payload?.error || `Request failed: ${res.status}`);
