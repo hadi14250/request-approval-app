@@ -9,3 +9,6 @@ I'll assume only requesters can make requests, users with only approver roles wi
 I'll assume that approver comment are manadatory when approving or rejecting a request
 
 make tradeoff between sqlite and postgres
+
+next steps:
+- add length checks on backend side
