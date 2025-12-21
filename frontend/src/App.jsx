@@ -1,28 +1,23 @@
-import { useState, useEffect } from "react";
 import useMakeRequest from "./hooks/useMakeRequest";
 import "./App.css";
+import {Routes, Route, Link} from "react-router-dom";
+import Home from "./pages/Home";
+import Requests from "./pages/Requests";
 
 function App() {
-  const API_URL = import.meta.env.VITE_API_URL;
-
-  const { data, loading, error } = useMakeRequest(
-    `${API_URL}/requests`,
-    "GET",
-    1
-  )
-
-  if (loading) return <p>Loading...</p>
-  if (error) return <p>{error.message}</p>
-  if (!data || data.length === 0) return <p>No requests</p>
 
   return (
-    <div>
-      {data.map(r => (
-        <div key={r.id}>
-          <p>{r.title}, {r.description}</p>
-        </div>
-      ))}
-    </div>
+    <>
+      <nav style={{ display: "flex", gap: 12 }}>
+        <Link to="/">Home</Link>
+        <Link to="/requests">Requests</Link>
+      </nav>
+
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/requests" element={<Requests />} />
+      </Routes>
+    </>
   )
 }
 
