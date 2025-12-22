@@ -98,6 +98,10 @@ export default function RequestDetails() {
   };
 
   const handleSubmit = async () => {
+    if (!window.confirm("Are you sure you want to submit this request?")) {
+      return ;
+    }
+
     setActionLoading(true);
     try {
       const response = await fetch(`${API_URL}/requests/${id}/submit`, {
@@ -119,6 +123,10 @@ export default function RequestDetails() {
   };
 
   const handleApprove = async () => {
+    if (!window.confirm("Are you sure you want to approve this request?")) {
+      return;
+    }
+  
     const finalComment = comment.trim() || "Approved";
 
     setActionLoading(true);
@@ -146,6 +154,10 @@ export default function RequestDetails() {
   };
 
   const handleReject = async () => {
+    if (!window.confirm("Are you sure you want to reject this request?")) {
+      return;
+    }
+
     const finalComment = comment.trim() || "Rejected";
 
     setActionLoading(true);

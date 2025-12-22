@@ -51,6 +51,10 @@ export default function RequestForm() {
   }, [allRequests, id, isEditMode]);
 
   const handleSubmit = async (status) => {
+    if (status === "Submitted" && !window.confirm("Are you sure you want to submit this request?")) {
+      return;
+    }
+
     if (!title.trim()) {
       setError("Title is required");
       return;

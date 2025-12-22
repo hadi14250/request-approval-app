@@ -376,7 +376,6 @@ request-approval-workflow/
 3. **Styling & Responsiveness**
    - Mobile-responsive design (currently semi-responsive)
    - Use a CSS framework (Tailwind CSS or Material-UI)
-   - Consistent design system
    - Dark mode support
 
 4. **Features**
