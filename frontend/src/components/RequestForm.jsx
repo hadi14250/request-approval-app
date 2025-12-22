@@ -13,6 +13,8 @@ export default function RequestForm() {
   const [description, setDescription] = useState("");
   const [type, setType] = useState("General");
   const [loading, setLoading] = useState(false);
+  const [savingDraft, setSavingDraft] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
 
   const handleTitleChange = (e) => {
@@ -60,6 +62,12 @@ export default function RequestForm() {
       return;
     }
 
+    if (status === "Submitted") {
+      setSubmitting(true);
+    }
+    if (status === "Draft") {
+      setSavingDraft(true);
+    }
     setLoading(true);
     setError(null);
 
@@ -139,6 +147,8 @@ export default function RequestForm() {
       setError(err.message);
     } finally {
       setLoading(false);
+      setSubmitting(false);
+      setSavingDraft(false);
     }
   };
 
@@ -208,17 +218,17 @@ export default function RequestForm() {
           <button
             className="btn btn-secondary"
             onClick={() => handleSubmit("Draft")}
-            disabled={loading}
+            disabled={savingDraft}
           >
-            {loading ? "Saving..." : "Save as Draft"}
+            {savingDraft ? "Saving..." : "Save as Draft"}
           </button>
 
           <button
             className="btn btn-primary"
             onClick={() => handleSubmit("Submitted")}
-            disabled={loading}
+            disabled={submitting}
           >
-            {loading ? "Submitting..." : "Submit for Approval"}
+            {submitting ? "Submitting..." : "Submit for Approval"}
           </button>
 
           <button
