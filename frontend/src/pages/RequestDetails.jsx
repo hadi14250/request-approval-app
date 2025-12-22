@@ -11,7 +11,10 @@ export default function RequestDetails() {
   const [request, setRequest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [actionLoading, setActionLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
+  const [approving, setApproving] = useState(false);
   const [comment, setComment] = useState("");
 
   const handleApproverCommentChange = (e) => {
@@ -77,7 +80,7 @@ export default function RequestDetails() {
       return;
     }
 
-    setActionLoading(true);
+    setDeleting(true);
     try {
       const response = await fetch(`${API_URL}/requests/${id}`, {
         method: "DELETE",
@@ -93,7 +96,7 @@ export default function RequestDetails() {
       navigate("/requests");
     } catch (err) {
       setError(err.message);
-      setActionLoading(false);
+      setDeleting(false);
     }
   };
 
@@ -102,7 +105,7 @@ export default function RequestDetails() {
       return ;
     }
 
-    setActionLoading(true);
+    setSubmitting(true);
     try {
       const response = await fetch(`${API_URL}/requests/${id}/submit`, {
         method: "POST",
@@ -118,7 +121,7 @@ export default function RequestDetails() {
       navigate("/requests");
     } catch (err) {
       setError(err.message);
-      setActionLoading(false);
+      setSubmitting(false);
     }
   };
 
@@ -129,7 +132,7 @@ export default function RequestDetails() {
   
     const finalComment = comment.trim() || "Approved";
 
-    setActionLoading(true);
+    setApproving(true);
     try {
       const response = await fetch(`${API_URL}/requests/${id}/approve`, {
         method: "POST",
@@ -149,7 +152,7 @@ export default function RequestDetails() {
       navigate("/requests/pending");
     } catch (err) {
       setError(err.message);
-      setActionLoading(false);
+      setApproving(false);
     }
   };
 
@@ -160,7 +163,7 @@ export default function RequestDetails() {
 
     const finalComment = comment.trim() || "Rejected";
 
-    setActionLoading(true);
+    setRejecting(true);
     try {
       const response = await fetch(`${API_URL}/requests/${id}/reject`, {
         method: "POST",
@@ -180,7 +183,7 @@ export default function RequestDetails() {
       navigate("/requests/pending");
     } catch (err) {
       setError(err.message);
-      setActionLoading(false);
+      setRejecting(false);
     }
   };
 
@@ -284,23 +287,23 @@ export default function RequestDetails() {
           <button
             className="btn btn-primary"
             onClick={() => navigate(`/requests/${id}/edit`)}
-            disabled={actionLoading}
+            disabled={submitting || deleting || rejecting || approving}
           >
             Edit
           </button>
           <button
             className="btn btn-primary"
             onClick={handleSubmit}
-            disabled={actionLoading}
+            disabled={submitting || deleting || rejecting || approving}
           >
-            {actionLoading ? "Submitting..." : "Submit for Approval"}
+            {submitting ? "Submitting..." : "Submit for Approval"}
           </button>
           <button
             className="btn btn-danger"
             onClick={handleDelete}
-            disabled={actionLoading}
+            disabled={submitting || deleting || rejecting || approving}
           >
-            {actionLoading ? "Deleting..." : "Delete"}
+            {deleting ? "Deleting..." : "Delete"}
           </button>
         </div>
       )}
@@ -324,16 +327,16 @@ export default function RequestDetails() {
             <button
               className="btn btn-primary"
               onClick={handleApprove}
-              disabled={actionLoading}
+              disabled={submitting || deleting || rejecting || approving}
             >
-              {actionLoading ? "Approving..." : "Approve"}
+              {approving ? "Approving..." : "Approve"}
             </button>
             <button
               className="btn btn-danger"
               onClick={handleReject}
-              disabled={actionLoading}
+              disabled={submitting || deleting || rejecting || approving}
             >
-              {actionLoading ? "Rejecting..." : "Reject"}
+              {rejecting ? "Rejecting..." : "Reject"}
             </button>
           </div>
         </div>
