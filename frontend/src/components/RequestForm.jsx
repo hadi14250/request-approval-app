@@ -218,7 +218,7 @@ export default function RequestForm() {
           <button
             className="btn btn-secondary"
             onClick={() => handleSubmit("Draft")}
-            disabled={savingDraft}
+            disabled={savingDraft || submitting}
           >
             {savingDraft ? "Saving..." : "Save as Draft"}
           </button>
@@ -226,7 +226,7 @@ export default function RequestForm() {
           <button
             className="btn btn-primary"
             onClick={() => handleSubmit("Submitted")}
-            disabled={submitting}
+            disabled={submitting || savingDraft}
           >
             {submitting ? "Submitting..." : "Submit for Approval"}
           </button>
