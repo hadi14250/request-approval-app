@@ -14,10 +14,7 @@ export default function UserSelector() {
 
   if (currentUser.id === 2 && location.pathname === "/requests") {
     navigate("/");
-    console.log("ENTERED currentUser.id:", currentUser.id);
   }
-  console.log("currentUser.id:", currentUser.id);
-
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
