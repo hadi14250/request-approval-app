@@ -15,6 +15,20 @@ export default function RequestForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
+  const [titleMaxField, setTitleMaxField] = useState(false);
+
+  const handleTitleChange = (e) => {
+    if(e.target.value.length > 50)
+      return;
+    setTitle(e.target.value);
+  }
+
+  const handleDescriptionChange = (e) => {
+    if(e.target.value.length > 600)
+      return;
+    setDescription(e.target.value);
+  }
+
   const isEditMode = !!id;
 
   const {
@@ -149,12 +163,13 @@ export default function RequestForm() {
           <label htmlFor="title" className="form-label">
             Title *
           </label>
+          {titleMaxField && <p>test</p>}
           <input
             id="title"
             type="text"
             className="form-input"
             value={title}
-            onChange={(e) => setTitle(e.target.value)}
+            onChange={handleTitleChange}
             placeholder="Enter request title"
           />
         </div>
@@ -167,7 +182,7 @@ export default function RequestForm() {
             id="description"
             className="form-textarea"
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
+            onChange={handleDescriptionChange}
             placeholder="Enter request description (optional)"
           />
         </div>
