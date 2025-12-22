@@ -495,3 +495,57 @@ describe("POST /requests/:id/edit", () => {
     });
   });
 });
+
+describe("DELETE /requests/:id", () => {
+  describe("delete draft request", () => {
+    it("should respond with 204 status code", async () => {
+      const createResponse = await request(app)
+        .post("/requests")
+        .set("user-id", "1")
+        .send({
+          title: "VPN Access",
+          description: "Need VPN for work",
+          type: "Work",
+        });
+
+      expect(createResponse.statusCode).toBe(201);
+
+      const id = createResponse.body.id;
+
+      const deleteResponse = await request(app)
+        .delete(`/requests/${id}`)
+        .set("user-id", "1");
+
+      expect(deleteResponse.statusCode).toBe(204);
+    });
+  });
+
+  describe("delete submitted request", () => {
+    it("should respond with 400 status code", async () => {
+      const createResponse = await request(app)
+        .post("/requests")
+        .set("user-id", "1")
+        .send({
+          title: "VPN Access",
+          description: "Need VPN for work",
+          type: "Work",
+        });
+
+      expect(createResponse.statusCode).toBe(201);
+
+      const id = createResponse.body.id;
+
+      const submitResponse = await request(app)
+        .post(`/requests/${id}/submit`)
+        .set("user-id", "1");
+
+      expect(submitResponse.statusCode).toBe(200);
+
+      const deleteResponse = await request(app)
+        .delete(`/requests/${id}`)
+        .set("user-id", "1");
+
+      expect(deleteResponse.statusCode).toBe(400);
+    });
+  });
+});

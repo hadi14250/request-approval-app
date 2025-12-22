@@ -360,6 +360,7 @@ request-approval-workflow/
 1. **User Experience**
    - Toast notifications for success/error messages
    - Confirmation modals instead of browser alerts
+   - Limit to 5 requests per page with multiple page support
 
 2. **Form Improvements**
    - Real-time validation with error messages
