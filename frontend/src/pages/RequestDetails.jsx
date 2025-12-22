@@ -246,12 +246,24 @@ export default function RequestDetails() {
           </p>
           <p style={{ margin: "0.5rem 0", color: "#666" }}>
             <strong>Created at:</strong>{" "}
-            {new Date(request.createdAt).toLocaleDateString()}
+            {new Date(request.createdAt).toLocaleString(undefined, {
+              year: "numeric",
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
           </p>
           {request.updatedAt && (
             <p style={{ margin: "0.5rem 0", color: "#666" }}>
               <strong>Updated at:</strong>{" "}
-              {new Date(request.updatedAt).toLocaleDateString()}
+              {new Date(request.updatedAt).toLocaleString(undefined, {
+                year: "numeric",
+                month: "short",
+                day: "numeric",
+                hour: "2-digit",
+                minute: "2-digit",
+              })}
             </p>
           )}
           {request.approvedByUserName && (request.status === "Approved" ? (
@@ -285,7 +297,7 @@ export default function RequestDetails() {
               borderRadius: "4px",
             }}
           >
-            <h3>{request.approvedByUserName}'s comment</h3>
+            <h3>{request.approvedByUserName}'s comment:</h3>
             <p style={{ color: "#555", whiteSpace: "pre-wrap" }}>
               {request.approverComment}
             </p>

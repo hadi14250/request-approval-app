@@ -96,7 +96,13 @@ export default function Requests() {
               >
                 <span>Type: {request.type}</span>
                 <span style={{ marginLeft: "1rem" }}>
-                  Created: {new Date(request.createdAt).toLocaleDateString()}
+                  Created: {new Date(request.createdAt).toLocaleString(undefined, {
+                    year: "numeric",
+                    month: "short",
+                    day: "numeric",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
                 </span>
               </div>
 
