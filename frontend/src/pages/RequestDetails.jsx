@@ -18,10 +18,9 @@ export default function RequestDetails() {
   const [comment, setComment] = useState("");
 
   const handleApproverCommentChange = (e) => {
-    if(e.target.value.length > 600)
-      return;
+    if (e.target.value.length > 600) return;
     setComment(e.target.value);
-  }
+  };
 
   const isRequester = currentUser.roles.includes("Requester");
   const isApprover = currentUser.roles.includes("Approver");
@@ -102,7 +101,7 @@ export default function RequestDetails() {
 
   const handleSubmit = async () => {
     if (!window.confirm("Are you sure you want to submit this request?")) {
-      return ;
+      return;
     }
 
     setSubmitting(true);
@@ -129,7 +128,7 @@ export default function RequestDetails() {
     if (!window.confirm("Are you sure you want to approve this request?")) {
       return;
     }
-  
+
     const finalComment = comment.trim() || "Approved";
 
     setApproving(true);
@@ -266,17 +265,16 @@ export default function RequestDetails() {
               })}
             </p>
           )}
-          {request.approvedByUserName && (request.status === "Approved" ? (
-            <p style={{ margin: "0.5rem 0", color: "#666" }}>
-              <strong>Approved by:</strong>{" "}
-              {request.approvedByUserName}
-            </p>
-          ) : (
-            <p style={{ margin: "0.5rem 0", color: "#666" }}>
-              <strong>Rejected by:</strong>{" "}
-              {request.approvedByUserName}
-            </p>
-          ))}
+          {request.approvedByUserName &&
+            (request.status === "Approved" ? (
+              <p style={{ margin: "0.5rem 0", color: "#666" }}>
+                <strong>Approved by:</strong> {request.approvedByUserName}
+              </p>
+            ) : (
+              <p style={{ margin: "0.5rem 0", color: "#666" }}>
+                <strong>Rejected by:</strong> {request.approvedByUserName}
+              </p>
+            ))}
         </div>
 
         {request.description && (

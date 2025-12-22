@@ -17,16 +17,14 @@ export default function RequestForm() {
   const [error, setError] = useState(null);
 
   const handleTitleChange = (e) => {
-    if(e.target.value.length > 50)
-      return;
+    if (e.target.value.length > 50) return;
     setTitle(e.target.value);
-  }
+  };
 
   const handleDescriptionChange = (e) => {
-    if(e.target.value.length > 600)
-      return;
+    if (e.target.value.length > 600) return;
     setDescription(e.target.value);
-  }
+  };
 
   const isEditMode = !!id;
 
@@ -52,7 +50,10 @@ export default function RequestForm() {
   }, [allRequests, id, isEditMode]);
 
   const handleSubmit = async (status) => {
-    if (status === "Submitted" && !window.confirm("Are you sure you want to submit this request?")) {
+    if (
+      status === "Submitted" &&
+      !window.confirm("Are you sure you want to submit this request?")
+    ) {
       return;
     }
 

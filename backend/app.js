@@ -7,19 +7,20 @@ const app = express();
 // splits env CORS_ORIGINS links and whitelists them
 const allowedOrigins = (process.env.CORS_ORIGINS || "")
   .split(",")
-  .map(s => s.trim())
-  .filter(Boolean)
+  .map((s) => s.trim())
+  .filter(Boolean);
 
-app.use(cors({
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true)
-    if (allowedOrigins.includes(origin)) return callback(null, true)
-    return callback(new Error("CORS not allowed for this origin: " + origin))
-  },
-  methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "user-id"],
-}))
-
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error("CORS not allowed for this origin: " + origin));
+    },
+    methods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "user-id"],
+  })
+);
 
 app.use(express.json());
 
@@ -76,11 +77,15 @@ app.post("/requests", (req, res) => {
   }
 
   if (!isValidLength(title, 50)) {
-    return res.status(400).json({error: "Title must be less than 50 characters"});
+    return res
+      .status(400)
+      .json({ error: "Title must be less than 50 characters" });
   }
 
   if (description && !isValidLength(description, 600)) {
-    return res.status(400).json({error: "Description must be less than 600 characters"});
+    return res
+      .status(400)
+      .json({ error: "Description must be less than 600 characters" });
   }
 
   const trimmedTitle = title.trim();
@@ -266,9 +271,10 @@ app.post("/requests/:id/approve", (req, res) => {
     return res.status(400).json({ error: "Approver comment is required" });
   }
 
-
   if (!isValidLength(approverComment, 600)) {
-    return res.status(400).json({error: "Comment must be less than 600 characters"});
+    return res
+      .status(400)
+      .json({ error: "Comment must be less than 600 characters" });
   }
 
   const nowDate = new Date().toISOString();
@@ -335,9 +341,11 @@ app.post("/requests/:id/reject", (req, res) => {
   if (typeof approverComment !== "string" || !approverComment.trim()) {
     return res.status(400).json({ error: "Approver comment is required" });
   }
-  
+
   if (!isValidLength(approverComment, 600)) {
-    return res.status(400).json({error: "Comment must be less than 600 characters"});
+    return res
+      .status(400)
+      .json({ error: "Comment must be less than 600 characters" });
   }
   const nowDate = new Date().toISOString();
 
@@ -413,7 +421,9 @@ app.patch("/requests/:id/edit", (req, res) => {
       return res.status(400).json({ error: "Title is required" });
     }
     if (!isValidLength(title, 50)) {
-      return res.status(400).json({error: "Title must be less than 50 characters"});
+      return res
+        .status(400)
+        .json({ error: "Title must be less than 50 characters" });
     }
     newTitle = trimmedTitle;
   }
@@ -423,7 +433,9 @@ app.patch("/requests/:id/edit", (req, res) => {
       return res.status(400).json({ error: "Description must be a string" });
     }
     if (!isValidLength(description, 600)) {
-      return res.status(400).json({error: "Description must be less than 600 characters"});
+      return res
+        .status(400)
+        .json({ error: "Description must be less than 600 characters" });
     }
     newDescription = description;
   }

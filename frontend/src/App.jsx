@@ -36,14 +36,14 @@ function Navigation() {
         <Link to="/" className={isActive("/") ? "nav-link-active" : ""}>
           Home
         </Link>
-        { currentUser.roles.includes("Requester") &&
+        {currentUser.roles.includes("Requester") && (
           <Link
             to="/requests"
             className={isActive("/requests") ? "nav-link-active" : ""}
           >
             My Requests
           </Link>
-        }
+        )}
         <Link
           to="/requests/pending"
           className={isActive("/requests/pending") ? "nav-link-active" : ""}
