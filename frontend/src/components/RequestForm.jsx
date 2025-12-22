@@ -12,7 +12,6 @@ export default function RequestForm() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [type, setType] = useState("General");
-  const [loading, setLoading] = useState(false);
   const [savingDraft, setSavingDraft] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState(null);
@@ -68,7 +67,7 @@ export default function RequestForm() {
     if (status === "Draft") {
       setSavingDraft(true);
     }
-    setLoading(true);
+
     setError(null);
 
     try {
@@ -146,7 +145,6 @@ export default function RequestForm() {
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
       setSubmitting(false);
       setSavingDraft(false);
     }
@@ -234,7 +232,7 @@ export default function RequestForm() {
           <button
             className="btn btn-secondary"
             onClick={() => navigate("/requests")}
-            disabled={loading}
+            disabled={savingDraft || submitting}
           >
             Cancel
           </button>
