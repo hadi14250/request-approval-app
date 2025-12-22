@@ -245,15 +245,26 @@ export default function RequestDetails() {
             <strong>Created by:</strong> {request.createdByUserName}
           </p>
           <p style={{ margin: "0.5rem 0", color: "#666" }}>
-            <strong>Created:</strong>{" "}
+            <strong>Created at:</strong>{" "}
             {new Date(request.createdAt).toLocaleDateString()}
           </p>
           {request.updatedAt && (
             <p style={{ margin: "0.5rem 0", color: "#666" }}>
-              <strong>Updated:</strong>{" "}
+              <strong>Updated at:</strong>{" "}
               {new Date(request.updatedAt).toLocaleDateString()}
             </p>
           )}
+          {request.approvedByUserName && (request.status === "Approved" ? (
+            <p style={{ margin: "0.5rem 0", color: "#666" }}>
+              <strong>Approved by:</strong>{" "}
+              {request.approvedByUserName}
+            </p>
+          ) : (
+            <p style={{ margin: "0.5rem 0", color: "#666" }}>
+              <strong>Rejected by:</strong>{" "}
+              {request.approvedByUserName}
+            </p>
+          ))}
         </div>
 
         {request.description && (
@@ -274,7 +285,7 @@ export default function RequestDetails() {
               borderRadius: "4px",
             }}
           >
-            <h3>Approver Comment</h3>
+            <h3>{request.approvedByUserName}'s comment</h3>
             <p style={{ color: "#555", whiteSpace: "pre-wrap" }}>
               {request.approverComment}
             </p>
