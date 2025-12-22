@@ -360,13 +360,14 @@ request-approval-workflow/
 1. **User Experience**
    - Toast notifications for success/error messages
    - Confirmation modals instead of browser alerts
+   - Search and filter requests
+   - Sort requests by date, status, type
    - Limit to 5 requests per page with multiple page support
 
 2. **Form Improvements**
    - Use `useReducer`
    - Real-time validation with error messages
    - Character count for text fields
-   - Form field hints and tooltips
    - Auto-save drafts (save while typing)
    - Rich text editor for description
 
@@ -375,7 +376,4 @@ request-approval-workflow/
    - Use a CSS framework (Tailwind CSS or Material-UI)
    - Dark mode support
 
-4. **Features**
-   - Search and filter requests
-   - Sort requests by date, status, type
    
