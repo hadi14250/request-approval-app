@@ -14,6 +14,12 @@ export default function RequestDetails() {
   const [actionLoading, setActionLoading] = useState(false);
   const [comment, setComment] = useState("");
 
+  const handleApproverCommentChange = (e) => {
+    if(e.target.value.length > 600)
+      return;
+    setComment(e.target.value);
+  }
+
   const isRequester = currentUser.roles.includes("Requester");
   const isApprover = currentUser.roles.includes("Approver");
 
@@ -298,7 +304,7 @@ export default function RequestDetails() {
               id="comment"
               className="form-textarea"
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={handleApproverCommentChange}
               placeholder="Add a comment for your decision"
             />
           </div>

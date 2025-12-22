@@ -15,8 +15,6 @@ export default function RequestForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const [titleMaxField, setTitleMaxField] = useState(false);
-
   const handleTitleChange = (e) => {
     if(e.target.value.length > 50)
       return;
