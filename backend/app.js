@@ -75,12 +75,12 @@ app.post("/requests", (req, res) => {
     return res.status(400).json({ error: "Title must be a string" });
   }
 
-  if (!isValidLength(title, 25)) {
-    return res.status(400).json({error: "Title must be less than 25 characters"});
+  if (!isValidLength(title, 50)) {
+    return res.status(400).json({error: "Title must be less than 50 characters"});
   }
 
-  if (description && !isValidLength(description, 100)) {
-    return res.status(400).json({error: "Description must be less than 100 characters"});
+  if (description && !isValidLength(description, 600)) {
+    return res.status(400).json({error: "Description must be less than 600 characters"});
   }
 
   const trimmedTitle = title.trim();
@@ -267,8 +267,8 @@ app.post("/requests/:id/approve", (req, res) => {
   }
 
 
-  if (!isValidLength(approverComment, 100)) {
-    return res.status(400).json({error: "Comment must be less than 100 characters"});
+  if (!isValidLength(approverComment, 600)) {
+    return res.status(400).json({error: "Comment must be less than 600 characters"});
   }
 
   const nowDate = new Date().toISOString();
@@ -336,8 +336,8 @@ app.post("/requests/:id/reject", (req, res) => {
     return res.status(400).json({ error: "Approver comment is required" });
   }
   
-  if (!isValidLength(approverComment, 100)) {
-    return res.status(400).json({error: "Comment must be less than 100 characters"});
+  if (!isValidLength(approverComment, 600)) {
+    return res.status(400).json({error: "Comment must be less than 600 characters"});
   }
   const nowDate = new Date().toISOString();
 
@@ -412,8 +412,8 @@ app.patch("/requests/:id/edit", (req, res) => {
     if (!trimmedTitle) {
       return res.status(400).json({ error: "Title is required" });
     }
-    if (!isValidLength(title, 25)) {
-      return res.status(400).json({error: "Title must be less than 25 characters"});
+    if (!isValidLength(title, 50)) {
+      return res.status(400).json({error: "Title must be less than 50 characters"});
     }
     newTitle = trimmedTitle;
   }
@@ -422,8 +422,8 @@ app.patch("/requests/:id/edit", (req, res) => {
     if (typeof description !== "string") {
       return res.status(400).json({ error: "Description must be a string" });
     }
-    if (!isValidLength(description, 100)) {
-      return res.status(400).json({error: "Description must be less than 100 characters"});
+    if (!isValidLength(description, 600)) {
+      return res.status(400).json({error: "Description must be less than 600 characters"});
     }
     newDescription = description;
   }
