@@ -161,7 +161,6 @@ export default function RequestForm() {
           <label htmlFor="title" className="form-label">
             Title *
           </label>
-          {titleMaxField && <p>test</p>}
           <input
             id="title"
             type="text"
