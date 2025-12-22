@@ -38,7 +38,11 @@
   max-width: 900px;
   margin: 0 auto;
   padding: 2rem;
-  color: #213547;
+  color: #535bf2;
+}
+
+.page-container h1 {
+    color: #535bf2 ;
 }
 
 .card {
@@ -114,7 +118,7 @@
 
 .btn-secondary {
   background-color: #ddd;
-  color: #333;
+  color: #333333;
 }
 
 .btn-secondary:hover {

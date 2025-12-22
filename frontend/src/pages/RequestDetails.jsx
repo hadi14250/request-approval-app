@@ -293,7 +293,7 @@ export default function RequestDetails() {
             style={{
               marginTop: "1rem",
               padding: "1rem",
-              backgroundColor: "#f9f9f9",
+              backgroundColor: "#e7e7e7ff",
               borderRadius: "4px",
             }}
           >
