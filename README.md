@@ -363,6 +363,7 @@ request-approval-workflow/
    - Limit to 5 requests per page with multiple page support
 
 2. **Form Improvements**
+   - Use `useReducer`
    - Real-time validation with error messages
    - Character count for text fields
    - Form field hints and tooltips
