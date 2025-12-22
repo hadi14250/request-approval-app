@@ -1,6 +1,9 @@
 import { useUser } from "../context/UserContext";
+import { useNavigate, useLocation } from "react-router-dom";
 
 export default function UserSelector() {
+  const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser, setCurrentUser, users } = useUser();
 
   const handleUserChange = (e) => {
@@ -8,6 +11,13 @@ export default function UserSelector() {
     const selectedUser = users.find((user) => user.id === userId);
     setCurrentUser(selectedUser);
   };
+
+  if (currentUser.id === 2 && location.pathname === "/requests") {
+    navigate("/");
+    console.log("ENTERED currentUser.id:", currentUser.id);
+  }
+  console.log("currentUser.id:", currentUser.id);
+
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>

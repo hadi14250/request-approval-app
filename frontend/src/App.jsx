@@ -7,9 +7,11 @@ import Requests from "./pages/Requests";
 import Pending from "./pages/Pending";
 import RequestDetails from "./pages/RequestDetails";
 import RequestForm from "./components/RequestForm";
+import { useUser } from "./context/UserContext";
 
 function Navigation() {
   const location = useLocation();
+  const { currentUser } = useUser();
 
   const isActive = (path) => {
     if (path === "/") {
@@ -34,17 +36,19 @@ function Navigation() {
         <Link to="/" className={isActive("/") ? "nav-link-active" : ""}>
           Home
         </Link>
-        <Link
-          to="/requests"
-          className={isActive("/requests") ? "nav-link-active" : ""}
-        >
-          Requests
-        </Link>
+        { currentUser.roles.includes("Requester") &&
+          <Link
+            to="/requests"
+            className={isActive("/requests") ? "nav-link-active" : ""}
+          >
+            My Requests
+          </Link>
+        }
         <Link
           to="/requests/pending"
           className={isActive("/requests/pending") ? "nav-link-active" : ""}
         >
-          Pending Approval
+          Pending Approvals
         </Link>
       </div>
       <UserSelector />

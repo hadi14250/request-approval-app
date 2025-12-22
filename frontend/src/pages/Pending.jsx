@@ -31,7 +31,7 @@ export default function Pending() {
 
   return (
     <div className="page-container">
-      <h1>Pending Approval</h1>
+      <h1>Pending Approvals</h1>
 
       {!data || data.length === 0 ? (
         <div className="empty-state">
