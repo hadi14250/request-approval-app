@@ -61,6 +61,39 @@ The application is deployed with:
 
 ---
 
+## Application Pages
+
+### Home
+- Displays the current user’s role(s)
+- Explains what actions the user can perform
+  - For example, users with the **Requester** role can create new requests
+
+### My Requests
+- Displays all requests created by the current user
+- Each request includes its current status:
+  - Draft
+  - Submitted
+  - Rejected
+  - Approved
+- This page is only accessible to users with the **Requester** role
+
+### Pending Approvals
+Displays requests with **Submitted** status based on the user’s role:
+
+- **Requester only**
+  - Sees their own submitted requests
+
+- **Approver only**
+  - Sees all submitted requests from all users that are awaiting approval
+
+- **Requester + Approver**
+  - Sees all submitted requests from all users **except** the requests they personally created
+
+#### Note:
+A dropdown located in the top-right corner of the application allows switching between different users. It is intended for simulating different roles and permissions
+
+---
+
 ## Tech Stack
 
 ### Frontend
