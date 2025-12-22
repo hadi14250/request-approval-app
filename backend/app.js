@@ -45,6 +45,10 @@ function getRequestById(requestId) {
   return request;
 }
 
+function isValidLength(value, max) {
+  return typeof value === "string" && value.trim().length <= max;
+}
+
 app.get("/health", (req, res) => {
   res.json({ status: "worked" });
 });
@@ -69,6 +73,14 @@ app.post("/requests", (req, res) => {
 
   if (typeof title !== "string") {
     return res.status(400).json({ error: "Title must be a string" });
+  }
+
+  if (!isValidLength(title, 25)) {
+    return res.status(400).json({error: "Title must be less than 25 characters"});
+  }
+
+  if (description && !isValidLength(description, 100)) {
+    return res.status(400).json({error: "Description must be less than 100 characters"});
   }
 
   const trimmedTitle = title.trim();
@@ -254,6 +266,11 @@ app.post("/requests/:id/approve", (req, res) => {
     return res.status(400).json({ error: "Approver comment is required" });
   }
 
+
+  if (!isValidLength(approverComment, 100)) {
+    return res.status(400).json({error: "Comment must be less than 100 characters"});
+  }
+
   const nowDate = new Date().toISOString();
 
   db.prepare(
@@ -318,7 +335,10 @@ app.post("/requests/:id/reject", (req, res) => {
   if (typeof approverComment !== "string" || !approverComment.trim()) {
     return res.status(400).json({ error: "Approver comment is required" });
   }
-
+  
+  if (!isValidLength(approverComment, 100)) {
+    return res.status(400).json({error: "Comment must be less than 100 characters"});
+  }
   const nowDate = new Date().toISOString();
 
   db.prepare(
@@ -392,12 +412,18 @@ app.patch("/requests/:id/edit", (req, res) => {
     if (!trimmedTitle) {
       return res.status(400).json({ error: "Title is required" });
     }
+    if (!isValidLength(title, 25)) {
+      return res.status(400).json({error: "Title must be less than 25 characters"});
+    }
     newTitle = trimmedTitle;
   }
 
   if (description !== undefined) {
     if (typeof description !== "string") {
       return res.status(400).json({ error: "Description must be a string" });
+    }
+    if (!isValidLength(description, 100)) {
+      return res.status(400).json({error: "Description must be less than 100 characters"});
     }
     newDescription = description;
   }
