@@ -142,10 +142,12 @@ npm test
 
 Open your browser and navigate to `http://localhost:5173`
 
-**Default Users:**
-- Hadi (Requester only)
-- Haneen (Approver only)
-- Lama (Both Requester and Approver)
+  **Default Users (for testing):**
+  - **Hadi** - Requester only (can create/submit requests)
+  - **Haneen** - Approver only (can approve/reject requests)
+  - **Lama** - Both roles (can do everything except approve her own requests)
+
+  **Note:** Use the dropdown in the top-right corner to switch between users and test different role permissions.
 
 Use the dropdown in the top-right corner to switch between users.
 
@@ -326,22 +328,17 @@ request-approval-workflow/
 
 ### Backend Improvements
 
-1. **Input Validation**
-   - Add length limits for title (e.g., max 200 characters)
-   - Add length limits for description (e.g., max 2000 characters)
-   - Add length limits for approver comments
-
-2. **Real Authentication System**
+1. **Real Authentication System**
    - Implement JWT-based authentication
    - Add user registration and login endpoints
    - Hash passwords
    - Add session management
    - Implement refresh tokens for long sessions
 
-3. **Database Improvements**
-   - Migrate to PostgreSQL for production
+2. **Database Improvements**
+   - Migrate to PostgreSQL
 
-4. **API Enhancements**
+3. **API Enhancements**
    - Add endpoint to fetch one single request
    - Add pagination for request lists (limit/offset)
    - Add filtering (by status, type, date range)
@@ -349,12 +346,11 @@ request-approval-workflow/
    - Return total count in list responses
    - Add rate limiting to prevent abuse
 
-5. **Testing**
+4. **Testing**
    - Add edge case testing
    - Add isolated test databse (test.db)
 
-6. **Business Logic**
-   - Add request history/audit trail
+5. **Business Logic**
    - Add request assignment (assign to specific approver)
    - Support multiple approval levels
    - Add request due dates
@@ -364,7 +360,6 @@ request-approval-workflow/
 1. **User Experience**
    - Toast notifications for success/error messages
    - Confirmation modals instead of browser alerts
-   - Add approved or rejected by fields for single requests page
 
 2. **Form Improvements**
    - Real-time validation with error messages
